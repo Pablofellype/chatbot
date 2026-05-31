@@ -158,17 +158,12 @@ function App() {
             <div className="flex flex-col">
               <span className="text-[17px] font-extrabold text-[var(--text-primary)] tracking-tight uppercase leading-none font-display">Coca-Cola</span>
               <span className="text-[10px] font-bold text-[#F40009] tracking-[0.15em] uppercase mt-0.5">Smart Manager</span>
-            </div>
-          </div>
-          
-          {/* Real-time connection status */}
-          <div className="mt-4 flex items-center justify-between bg-[var(--surface-sunken)] border border-[var(--border)] rounded-lg px-3 py-1.5 backdrop-blur-sm">
-            <span className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider">Servidor</span>
-            <div className="flex items-center gap-1.5">
-              <div className={`w-2 h-2 rounded-full ${botOnline ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} style={botOnline ? { boxShadow: '0 0 8px rgba(16,185,129,0.5)' } : { boxShadow: '0 0 8px rgba(244,63,94,0.5)' }} />
-              <span className={`text-[10px] font-bold uppercase tracking-wider ${botOnline ? 'text-emerald-600' : 'text-rose-600'}`}>
-                {botOnline ? 'Online' : 'Offline'}
-              </span>
+              <div className="flex items-center gap-1.5 mt-1.5">
+                <div className={`w-[7px] h-[7px] rounded-full ${botOnline ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} style={botOnline ? { boxShadow: '0 0 6px rgba(16,185,129,0.5)' } : {}} />
+                <span className={`text-[11px] font-semibold tracking-wide ${botOnline ? 'text-emerald-600' : 'text-rose-500'}`}>
+                  {botOnline ? 'Online' : 'Offline'}
+                </span>
+              </div>
             </div>
           </div>
         </div>
