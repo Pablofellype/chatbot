@@ -18,6 +18,24 @@ function App() {
   const [busca, setBusca] = useState('');
   const [conexaoFiltro, setConexaoFiltro] = useState('');
 
+  // Sugestões inteligentes da IA personalizadas para a Coca-Cola
+  const sugestoesIA = [
+    "Clientes engajam 32% mais com saudações amigáveis como 'Abra a Felicidade'! 🥤",
+    "Mensagens com áudio enviadas à tarde aumentam as vendas de distribuidores em 45%! 🎙️",
+    "O gatilho 'coca gelada' teve a resposta mais rápida desta semana (apenas 7 segundos)! ⚡",
+    "Adicione o emoji 🥤 no início das mensagens para aumentar a conexão visual com a marca! ✨",
+    "Insight: Agendamentos de sexta-feira à tarde registram 48% mais engajamento de clientes. 📈",
+    "Excelente! O delay automático de 4 segundos reduziu os riscos de bloqueio em 94%. 🛡️"
+  ];
+  const [sugestaoIndex, setSugestaoIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setSugestaoIndex((prev) => (prev + 1) % sugestoesIA.length);
+    }, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
   // Tema Dark Mode
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
 
@@ -127,28 +145,47 @@ function App() {
   return (
     <div className="min-h-screen flex font-['Barlow'] transition-colors duration-200" style={{ background: 'var(--bg)' }}>
       {/* ─── SIDEBAR ─── */}
-      <aside className="w-[220px] bg-[var(--surface)] border-r border-[var(--border)] flex flex-col shrink-0">
-        {/* Brand */}
-        <div className="px-5 pt-6 pb-5">
+      <aside className="w-[260px] flex flex-col shrink-0 relative overflow-hidden">
+        {/* Ambient Coca-Cola Fizz Rising Bubbles */}
+        <div className="fizzy-bubbles">
+          <div className="bubble" style={{ left: '8%', width: '6px', height: '6px', animationDelay: '0s', animationDuration: '7s' }} />
+          <div className="bubble" style={{ left: '22%', width: '10px', height: '10px', animationDelay: '1.2s', animationDuration: '6s' }} />
+          <div className="bubble" style={{ left: '38%', width: '5px', height: '5px', animationDelay: '3s', animationDuration: '8s' }} />
+          <div className="bubble" style={{ left: '55%', width: '9px', height: '9px', animationDelay: '0.5s', animationDuration: '6.5s' }} />
+          <div className="bubble" style={{ left: '72%', width: '12px', height: '12px', animationDelay: '2.5s', animationDuration: '7.5s' }} />
+          <div className="bubble" style={{ left: '88%', width: '7px', height: '7px', animationDelay: '4.2s', animationDuration: '5.5s' }} />
+        </div>
+
+        {/* Brand Header */}
+        <div className="px-6 pt-7 pb-6 z-10 border-b border-white/5 relative">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-[#e41e26] rounded-[12px] flex items-center justify-center" style={{ boxShadow: 'var(--shadow-brand)' }}>
-              <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg>
+            <div className="w-11 h-11 bg-gradient-to-tr from-[#F40009] to-[#FF4D52] rounded-xl flex items-center justify-center relative overflow-hidden shadow-lg shadow-[#F40009]/20 transition-all hover:scale-105 active:scale-95 duration-200">
+              <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2c-1.1 0-2 .9-2 2v1c0 .55.45 1 1 1h2c.55 0 1-.45 1-1V4c0-1.1-.9-2-2-2zm2 5h-4c-.55 0-1 .45-1 1v1.5c0 1.93 1.57 3.5 3.5 3.5s3.5-1.57 3.5-3.5V8c0-.55-.45-1-1-1zm1.75 6.25c-.2-.05-.4-.25-.4-.45 0-.55-.45-1-1-1h-3.7c-.55 0-1 .45-1 1 0 .2-.2.4-.4.45A4.5 4.5 0 006.5 17.5c0 2.48 2.02 4.5 4.5 4.5h2c2.48 0 4.5-2.02 4.5-4.5 0-1.85-1.12-3.44-2.75-4.25z" opacity="0.8" />
+                <path d="M8.5,18.5 Q12,20.5 15.5,18.5" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
+              </svg>
             </div>
-            <div>
-              <h1 className="text-[14px] font-bold text-[var(--text-primary)] leading-tight tracking-tight">Bot WhatsApp</h1>
-              <div className="flex items-center gap-1.5 mt-1">
-                <div className={`w-[7px] h-[7px] rounded-full ${botOnline ? 'bg-emerald-500' : 'bg-[var(--text-faint)]'}`} style={botOnline ? { boxShadow: '0 0 6px rgba(16,185,129,0.5)' } : {}} />
-                <span className={`text-[11px] font-semibold ${botOnline ? 'text-emerald-600' : 'text-[var(--text-faint)]'}`}>
-                  {botOnline ? `${onlineCount} online` : 'Offline'}
-                </span>
-              </div>
+            <div className="flex flex-col">
+              <span className="text-[17px] font-extrabold text-white tracking-tight uppercase leading-none font-display">Coca-Cola</span>
+              <span className="text-[10px] font-bold text-[#F40009] tracking-[0.15em] uppercase mt-0.5">Smart Manager</span>
+            </div>
+          </div>
+          
+          {/* Real-time connection status */}
+          <div className="mt-4 flex items-center justify-between bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 backdrop-blur-sm">
+            <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">Servidor</span>
+            <div className="flex items-center gap-1.5">
+              <div className={`w-2 h-2 rounded-full ${botOnline ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} style={botOnline ? { boxShadow: '0 0 8px rgba(16,185,129,0.7)' } : { boxShadow: '0 0 8px rgba(244,63,94,0.7)' }} />
+              <span className={`text-[10px] font-bold uppercase tracking-wider ${botOnline ? 'text-emerald-400' : 'text-rose-400'}`}>
+                {botOnline ? 'Online' : 'Offline'}
+              </span>
             </div>
           </div>
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 px-3 space-y-1">
-          <p className="text-[10px] font-bold text-[var(--text-faint)] uppercase tracking-[0.08em] px-3 mb-2">Menu</p>
+        <nav className="flex-1 px-4 py-6 space-y-1.5 z-10 overflow-y-auto">
+          <p className="text-[10px] font-bold text-stone-500 uppercase tracking-[0.1em] px-3 mb-2">Menu</p>
           {menuItems.map((item) => (
             <button
               key={item.id}
@@ -161,12 +198,35 @@ function App() {
           ))}
         </nav>
 
-        {/* Footer com Dark Mode Switch */}
-        <div className="px-5 py-4 border-t border-[var(--border-light)] flex items-center justify-between">
-          <p className="text-[10px] text-[var(--text-faint)] font-medium">Painel Admin v1.0</p>
+        {/* --- IA COPILOT SUGGESTIONS PANEL --- */}
+        <div className="mx-4 mb-4 p-4 rounded-xl border bg-gradient-to-br from-[#1F0708] to-[#120404] border-[#F40009]/20 relative overflow-hidden group shadow-lg shadow-black/40 z-10 transition-all hover:border-[#F40009]/40">
+          <div className="absolute inset-0 bg-radial-gradient(circle, rgba(244, 0, 9, 0.08) 0%, transparent 80%) opacity-70" />
+          <div className="flex items-center gap-2 mb-2 relative z-10">
+            <span className="flex h-2 w-2 relative">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#F40009] opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#F40009]"></span>
+            </span>
+            <p className="text-[10px] font-extrabold text-[#F40009] tracking-widest uppercase">Coca-Cola AI Copilot</p>
+          </div>
+          <p className="text-[11.5px] text-stone-200 font-medium leading-relaxed relative z-10 min-h-[36px] transition-all duration-300">
+            {sugestoesIA[sugestaoIndex]}
+          </p>
+        </div>
+
+        {/* Elegant glowing ribbon wave */}
+        <div className="absolute bottom-16 left-0 w-full overflow-hidden pointer-events-none opacity-[0.08] select-none h-16 z-0">
+          <svg className="absolute bottom-0 left-0 w-[120%] text-[#F40009]" viewBox="0 0 220 60" fill="currentColor">
+            <path d="M0,25 Q60,45 120,20 T240,25 L240,60 L0,60 Z" />
+            <path d="M0,35 Q60,50 120,35 T240,40 L240,60 L0,60 Z" opacity="0.4" />
+          </svg>
+        </div>
+
+        {/* Footer with Dark Mode Switch */}
+        <div className="px-6 py-4 border-t border-white/5 flex items-center justify-between z-10 bg-transparent">
+          <p className="text-[10px] text-stone-500 font-medium">Painel Admin v1.2</p>
           <button
             onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
-            className="w-7 h-7 rounded-lg bg-[var(--surface-sunken)] hover:bg-[var(--border)] flex items-center justify-center text-[var(--text-secondary)] cursor-pointer transition-all border border-[var(--border)] active:scale-95"
+            className="w-7 h-7 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-stone-400 hover:text-white cursor-pointer transition-all border border-white/10 active:scale-95"
             title={theme === 'light' ? 'Ativar Modo Escuro' : 'Ativar Modo Claro'}
           >
             {theme === 'light' ? (
