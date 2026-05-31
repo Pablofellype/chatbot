@@ -340,6 +340,7 @@ function FlowEditor({ fluxo, conexoes = [], onSalvar, onVoltar }) {
                 onNodesChange={onNodesChange} onEdgesChange={onEdgesChange}
                 onConnect={onConnect} onNodeClick={onNodeClick} onEdgeClick={onEdgeClick} onPaneClick={onPaneClick}
                 nodeTypes={nodeTypes} defaultEdgeOptions={defaultEdgeOptions}
+                minZoom={0.02} maxZoom={4}
                 fitView className="bg-slate-50" deleteKeyCode="Delete"
               >
                 <Background color="#cbd5e1" gap={24} size={1.5} />

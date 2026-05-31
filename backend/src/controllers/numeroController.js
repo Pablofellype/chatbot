@@ -1,4 +1,5 @@
 const prisma = require('../database/prisma');
+const whatsappService = require('../services/whatsappService');
 
 const listar = async (req, res) => {
   try {
@@ -6,7 +7,27 @@ const listar = async (req, res) => {
       orderBy: { criadoEm: 'desc' },
       include: { conexao: { select: { id: true, nome: true } } },
     });
-    res.json(numeros);
+
+    const obterFotoComTimeout = (num) => {
+      return new Promise((resolve) => {
+        const identificador = num.lid || num.numero;
+        if (!identificador) return resolve({ ...num, fotoUrl: null });
+
+        const timeout = setTimeout(() => resolve({ ...num, fotoUrl: null }), 600);
+        whatsappService.obterFotoPerfil(identificador)
+          .then((url) => {
+            clearTimeout(timeout);
+            resolve({ ...num, fotoUrl: url });
+          })
+          .catch(() => {
+            clearTimeout(timeout);
+            resolve({ ...num, fotoUrl: null });
+          });
+      });
+    };
+
+    const numerosEnriquecidos = await Promise.all(numeros.map(obterFotoComTimeout));
+    res.json(numerosEnriquecidos);
   } catch (error) {
     res.status(500).json({ erro: 'Erro ao listar' });
   }

@@ -365,13 +365,21 @@ function App() {
 
                     {/* Botões de Ações e Gatilhos */}
                     <div>
-                      {fluxo.gatilhos && (
-                        <div className="flex flex-wrap gap-1.5 py-3 border-t border-[var(--border-light)] mb-4">
-                          {fluxo.gatilhos.split(',').map((g, i) => (
-                            <span key={i} className="text-[10px] font-bold bg-[var(--surface-sunken)] text-[var(--text-secondary)] px-2.5 py-1 rounded-lg border border-[var(--border)]">{g.trim()}</span>
-                          ))}
-                        </div>
-                      )}
+                      {fluxo.gatilhos && (() => {
+                        const lista = fluxo.gatilhos.split(',').map(g => g.trim()).filter(Boolean);
+                        const visiveis = lista.slice(0, 10);
+                        const restantes = lista.length - 10;
+                        return (
+                          <div className="flex flex-wrap gap-1.5 py-3 border-t border-[var(--border-light)] mb-4">
+                            {visiveis.map((g, i) => (
+                              <span key={i} className="text-[10px] font-bold bg-[var(--surface-sunken)] text-[var(--text-secondary)] px-2.5 py-1 rounded-lg border border-[var(--border)]">{g}</span>
+                            ))}
+                            {restantes > 0 && (
+                              <span className="text-[10px] font-extrabold bg-[var(--brand-light)] text-[var(--brand)] px-2.5 py-1 rounded-lg border border-[rgba(244,0,9,0.1)]">+{restantes}</span>
+                            )}
+                          </div>
+                        );
+                      })()}
 
                       <div className="flex gap-2 justify-end pt-3 border-t border-[var(--border-light)]">
                         <button onClick={(e) => { e.stopPropagation(); handleEditar(fluxo); }} className="btn btn-dark btn-sm flex-1 md:flex-initial">Editar</button>

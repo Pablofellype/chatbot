@@ -599,6 +599,22 @@ async function listarContatos(conexaoId) {
   }
 }
 
+async function obterFotoPerfil(numeroOuJid) {
+  for (const [id, c] of conexoes) {
+    if (c.status?.connected && c.client) {
+      try {
+        let jid = numeroOuJid;
+        if (!jid.includes('@')) {
+          jid = `${jid}@c.us`;
+        }
+        const url = await c.client.getProfilePicUrl(jid);
+        if (url) return url;
+      } catch (e) {}
+    }
+  }
+  return null;
+}
+
 module.exports = {
   initAllConexoes,
   destruirTodas,
@@ -612,4 +628,5 @@ module.exports = {
   listarContatos,
   enviarMensagemParaGrupo,
   enviarMensagemParaContato,
+  obterFotoPerfil,
 };

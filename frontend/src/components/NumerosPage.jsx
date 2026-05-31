@@ -341,9 +341,20 @@ export default function NumerosPage() {
                 /* Visualizacao normal */
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-[var(--surface-sunken)] text-[var(--text-muted)] font-semibold text-sm flex items-center justify-center shrink-0">
-                      {getAvatar(num)}
-                    </div>
+                    {num.fotoUrl ? (
+                      <img 
+                        src={num.fotoUrl} 
+                        alt={num.nome || 'Avatar'} 
+                        className="w-10 h-10 rounded-full object-cover border border-[var(--border)] shrink-0 shadow-sm transition-transform hover:scale-105 duration-200"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                        }}
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-[var(--surface-sunken)] text-[var(--text-muted)] font-semibold text-sm flex items-center justify-center shrink-0 border border-[var(--border)] shadow-sm">
+                        {getAvatar(num)}
+                      </div>
+                    )}
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="text-[var(--text-primary)] font-mono text-sm font-medium">{formatarNumero(num.numero)}</span>
