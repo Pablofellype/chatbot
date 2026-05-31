@@ -110,8 +110,37 @@ body, aside, main, .card, .stat-card, input, select, textarea, button, .sidebar-
 }
 
 body {
+  position: relative;
+  overflow-x: hidden;
   background: var(--bg);
   color: var(--text-primary);
+}
+
+/* Floating Radial Glow Blobs for Modern Mesh Background */
+body::before {
+  content: '';
+  position: fixed;
+  top: -15%;
+  right: -10%;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(225, 29, 72, 0.05) 0%, rgba(255, 255, 255, 0) 70%);
+  z-index: -1;
+  pointer-events: none;
+  filter: blur(40px);
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  bottom: -15%;
+  left: -10%;
+  width: 700px;
+  height: 700px;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.04) 0%, rgba(255, 255, 255, 0) 70%);
+  z-index: -1;
+  pointer-events: none;
+  filter: blur(45px);
 }
 
 /* ==================== FOCUS ==================== */
@@ -172,54 +201,48 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 /* ==================== GLASS & SIDEBAR ==================== */
 
 .glass {
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
 }
 
+/* Gorgeous High-Contrast Dark Sidebar */
 aside {
-  background: rgba(255, 255, 255, 0.75) !important;
+  background: rgba(10, 15, 26, 0.95) !important;
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-right: 1px solid rgba(255, 255, 255, 0.04) !important;
 }
 
 [data-theme="dark"] aside {
-  background: rgba(15, 23, 42, 0.7) !important;
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  background: rgba(2, 6, 23, 0.95) !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.02) !important;
 }
 
-.sidebar-item {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
-  border-radius: var(--radius-md);
-  font-size: 13px;
+aside .sidebar-item {
+  color: #94a3b8;
   font-weight: 500;
-  color: var(--text-secondary);
-  transition: all var(--motion-fast) var(--ease);
-  cursor: pointer;
-  width: 100%;
+  transition: all 150ms var(--ease);
 }
 
-.sidebar-item:hover {
-  color: var(--text-primary);
-  background: var(--surface-sunken);
+aside .sidebar-item:hover {
+  color: #f8fafc;
+  background: rgba(255, 255, 255, 0.05);
 }
 
-.sidebar-item:active {
+aside .sidebar-item:active {
   transform: scale(0.96);
 }
 
-.sidebar-item-active {
-  color: var(--brand);
-  background: var(--brand-light);
+aside .sidebar-item-active {
+  color: #ffffff;
+  background: rgba(225, 29, 72, 0.15);
   font-weight: 600;
+  box-shadow: inset 0 0 12px rgba(225, 29, 72, 0.05);
+  border: 1px solid rgba(225, 29, 72, 0.2);
 }
 
-.sidebar-item-active::before {
+aside .sidebar-item-active::before {
   content: '';
   position: absolute;
   left: 0;
@@ -231,11 +254,25 @@ aside {
   border-radius: 0 3px 3px 0;
 }
 
+aside h1 {
+  color: #ffffff !important;
+}
+
+aside p {
+  color: #64748b !important;
+}
+
+aside div.border-t {
+  border-color: rgba(255, 255, 255, 0.06) !important;
+}
+
 /* ==================== CARD SYSTEM ==================== */
 
 .card, .stat-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.75) !important;
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(226, 232, 240, 0.6) !important;
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
   transition: transform 250ms cubic-bezier(.22, .78, .24, 1),
@@ -245,13 +282,21 @@ aside {
 }
 
 .card:hover, .stat-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-  border-color: var(--border-hover);
+  transform: translateY(-3px);
+  background: rgba(255, 255, 255, 0.95) !important;
+  box-shadow: var(--shadow-lg);
+  border-color: rgba(225, 29, 72, 0.25) !important;
+}
+
+[data-theme="dark"] .card, [data-theme="dark"] .stat-card {
+  background: rgba(15, 23, 42, 0.6) !important;
+  border: 1px solid rgba(30, 41, 59, 0.5) !important;
 }
 
 [data-theme="dark"] .card:hover, [data-theme="dark"] .stat-card:hover {
-  box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.4), 0 4px 12px -5px rgba(0, 0, 0, 0.2);
+  background: rgba(15, 23, 42, 0.85) !important;
+  box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.5);
+  border-color: rgba(225, 29, 72, 0.3) !important;
 }
 
 .card-interactive {
@@ -329,7 +374,7 @@ aside {
 
 .input {
   width: 100%;
-  background: var(--surface);
+  background: rgba(255, 255, 255, 0.8);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   padding: 10px 14px;
