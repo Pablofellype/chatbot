@@ -11,6 +11,40 @@ function formatarNumero(num) {
   return `+${d}`;
 }
 
+// Lista de países com seus DDIs, bandeiras e metadados para validação
+const COUNTRIES = [
+  { code: 'BR', name: 'Brasil', ddi: '55', flag: '🇧🇷', dddLen: 2, placeholderDdd: '61', placeholderTel: '99999-9999' },
+  { code: 'PT', name: 'Portugal', ddi: '351', flag: '🇵🇹', dddLen: 3, placeholderDdd: '219', placeholderTel: '912345678' },
+  { code: 'US', name: 'Estados Unidos', ddi: '1', flag: '🇺🇸', dddLen: 3, placeholderDdd: '202', placeholderTel: '5550199' },
+  { code: 'ES', name: 'Espanha', ddi: '34', flag: '🇪🇸', dddLen: 2, placeholderDdd: '91', placeholderTel: '123456789' },
+  { code: 'AR', name: 'Argentina', ddi: '54', flag: '🇦🇷', dddLen: 3, placeholderDdd: '11', placeholderTel: '1543218765' },
+  { code: 'AO', name: 'Angola', ddi: '244', flag: '🇦🇴', dddLen: 2, placeholderDdd: '22', placeholderTel: '923456789' },
+  { code: 'MZ', name: 'Moçambique', ddi: '258', flag: '🇲🇿', dddLen: 2, placeholderDdd: '21', placeholderTel: '841234567' },
+  { code: 'CV', name: 'Cabo Verde', ddi: '238', flag: '🇨🇻', dddLen: 2, placeholderDdd: '21', placeholderTel: '9123456' },
+  { code: 'GW', name: 'Guiné-Bissau', ddi: '245', flag: '🇬🇼', dddLen: 2, placeholderDdd: '3', placeholderTel: '955000000' },
+  { code: 'ST', name: 'São Tomé e Príncipe', ddi: '239', flag: '🇸🇹', dddLen: 2, placeholderDdd: '22', placeholderTel: '9012345' },
+  { code: 'TL', name: 'Timor-Leste', ddi: '670', flag: '🇹🇱', dddLen: 2, placeholderDdd: '33', placeholderTel: '7712345' },
+  { code: 'GB', name: 'Reino Unido', ddi: '44', flag: '🇬🇧', dddLen: 3, placeholderDdd: '20', placeholderTel: '7911123456' },
+  { code: 'DE', name: 'Alemanha', ddi: '49', flag: '🇩🇪', dddLen: 3, placeholderDdd: '30', placeholderTel: '12345678' },
+  { code: 'FR', name: 'França', ddi: '33', flag: '🇫🇷', dddLen: 1, placeholderDdd: '1', placeholderTel: '612345678' },
+  { code: 'IT', name: 'Itália', ddi: '39', flag: '🇮🇹', dddLen: 3, placeholderDdd: '06', placeholderTel: '3123456789' },
+  { code: 'CA', name: 'Canadá', ddi: '1', flag: '🇨🇦', dddLen: 3, placeholderDdd: '416', placeholderTel: '5550199' },
+  { code: 'MX', name: 'México', ddi: '52', flag: '🇲🇽', dddLen: 3, placeholderDdd: '55', placeholderTel: '12345678' },
+  { code: 'CO', name: 'Colômbia', ddi: '57', flag: '🇨🇴', dddLen: 3, placeholderDdd: '601', placeholderTel: '3001234567' },
+  { code: 'CL', name: 'Chile', ddi: '56', flag: '🇨🇱', dddLen: 2, placeholderDdd: '2', placeholderTel: '912345678' },
+  { code: 'PE', name: 'Peru', ddi: '51', flag: '🇵🇪', dddLen: 2, placeholderDdd: '1', placeholderTel: '912345678' },
+  { code: 'UY', name: 'Uruguai', ddi: '598', flag: '🇺🇾', dddLen: 2, placeholderDdd: '2', placeholderTel: '99123456' },
+  { code: 'PY', name: 'Paraguai', ddi: '595', flag: '🇵🇾', dddLen: 3, placeholderDdd: '21', placeholderTel: '912345678' },
+  { code: 'BO', name: 'Bolívia', ddi: '591', flag: '🇧🇴', dddLen: 2, placeholderDdd: '2', placeholderTel: '71234567' },
+  { code: 'EC', name: 'Equador', ddi: '593', flag: '🇪🇨', dddLen: 2, placeholderDdd: '2', placeholderTel: '991234567' },
+  { code: 'VE', name: 'Venezuela', ddi: '58', flag: '🇻🇪', dddLen: 3, placeholderDdd: '212', placeholderTel: '4121234567' },
+  { code: 'CN', name: 'China', ddi: '86', flag: '🇨🇳', dddLen: 3, placeholderDdd: '10', placeholderTel: '12345678901' },
+  { code: 'JP', name: 'Japão', ddi: '81', flag: '🇯🇵', dddLen: 2, placeholderDdd: '3', placeholderTel: '9012345678' },
+  { code: 'KR', name: 'Coreia do Sul', ddi: '82', flag: '🇰🇷', dddLen: 2, placeholderDdd: '2', placeholderTel: '1012345678' },
+  { code: 'IN', name: 'Índia', ddi: '91', flag: '🇮🇳', dddLen: 3, placeholderDdd: '22', placeholderTel: '9876543210' },
+  { code: 'AU', name: 'Austrália', ddi: '61', flag: '🇦🇺', dddLen: 2, placeholderDdd: '2', placeholderTel: '412345678' }
+];
+
 export default function NumerosPage() {
   const [numeros, setNumeros] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -21,10 +55,20 @@ export default function NumerosPage() {
   const [novoDdd, setNovoDdd] = useState('');
   const [novoTel, setNovoTel] = useState('');
   
+  // Estados para dropdown customizado de DDI
+  const [searchQuery, setSearchQuery] = useState('');
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  
   const [novoNome, setNovoNome] = useState('');
   const [novoLid, setNovoLid] = useState('');
   const [editando, setEditando] = useState(null);
   const [editForm, setEditForm] = useState({ numero: '', nome: '', lid: '' });
+
+  const selectedCountry = COUNTRIES.find(c => c.ddi === novoDdi) || COUNTRIES[0];
+  const filteredCountries = COUNTRIES.filter(c => 
+    c.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    c.ddi.includes(searchQuery)
+  );
 
   const carregar = async () => {
     try {
@@ -118,46 +162,114 @@ export default function NumerosPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             
             {/* Linha do Telefone Agrupada */}
-            <div className="grid grid-cols-12 gap-2">
-              <div className="col-span-4">
+            <div className="grid grid-cols-12 gap-2 relative">
+              <div className="col-span-4 relative">
                 <label className="label">País / DDI *</label>
-                <select
-                  value={novoDdi}
-                  onChange={(e) => setNovoDdi(e.target.value)}
-                  className="input !py-2.5"
+                
+                {/* Botão de Trigger do Dropdown */}
+                <button
+                  type="button"
+                  onClick={() => setDropdownOpen(!dropdownOpen)}
+                  className="input flex items-center justify-between !py-2.5 cursor-pointer text-left focus:outline-none"
                 >
-                  <option value="55">🇧🇷 BR (+55)</option>
-                  <option value="351">🇵🇹 PT (+351)</option>
-                  <option value="1">🇺🇸 US (+1)</option>
-                  <option value="244">🇦🇴 AO (+244)</option>
-                  <option value="258">🇲🇿 MZ (+258)</option>
-                  <option value="54">🇦🇷 AR (+54)</option>
-                  <option value="34">🇪🇸 ES (+34)</option>
-                  <option value="44">🇬🇧 GB (+44)</option>
-                  <option value="49">🇩🇪 DE (+49)</option>
-                  <option value="39">🇮🇹 IT (+39)</option>
-                  <option value="33">🇫🇷 FR (+33)</option>
-                </select>
+                  <span className="flex items-center gap-1.5 overflow-hidden">
+                    <span className="text-base shrink-0">{selectedCountry.flag}</span>
+                    <span className="font-medium truncate text-xs">{selectedCountry.name}</span>
+                  </span>
+                  <svg className={`w-3.5 h-3.5 text-[var(--text-muted)] shrink-0 transition-transform duration-200 ${dropdownOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                
+                {/* Overlay transparente para fechar dropdown ao clicar fora */}
+                {dropdownOpen && (
+                  <div 
+                    className="fixed inset-0 z-40 bg-transparent" 
+                    onClick={() => { setDropdownOpen(false); setSearchQuery(''); }}
+                  />
+                )}
+
+                {/* Lista Suspensa Customizada */}
+                {dropdownOpen && (
+                  <div className="absolute left-0 mt-1 w-[260px] bg-[var(--surface)] border border-[var(--border)] rounded-xl shadow-lg z-50 max-h-64 overflow-hidden flex flex-col animate-fadeInScale">
+                    {/* Campo de Busca */}
+                    <div className="p-2 border-b border-[var(--border-light)] bg-[var(--surface-sunken)]">
+                      <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Buscar país ou código..."
+                        className="input !py-1.5 !px-3 text-xs w-full"
+                        onClick={(e) => e.stopPropagation()}
+                        autoFocus
+                      />
+                    </div>
+                    {/* Lista de Países */}
+                    <div className="overflow-y-auto flex-1 py-1">
+                      {filteredCountries.length === 0 ? (
+                        <div className="px-4 py-3 text-xs text-[var(--text-faint)] text-center">Nenhum país encontrado</div>
+                      ) : (
+                        filteredCountries.map((c) => (
+                          <button
+                            key={`${c.code}-${c.ddi}`}
+                            type="button"
+                            onClick={() => {
+                              setNovoDdi(c.ddi);
+                              setDropdownOpen(false);
+                              setSearchQuery('');
+                              // Se o DDD atual passar do tamanho permitido no novo país, corta
+                              if (novoDdd.length > c.dddLen) {
+                                setNovoDdd(novoDdd.slice(0, c.dddLen));
+                              }
+                            }}
+                            className={`w-full flex items-center justify-between px-3 py-2 text-left text-xs hover:bg-[var(--brand-light)] hover:text-[var(--brand)] transition-colors ${
+                              novoDdi === c.ddi ? 'bg-[var(--brand-light)] text-[var(--brand)] font-semibold' : 'text-[var(--text-primary)]'
+                            }`}
+                          >
+                            <span className="flex items-center gap-2 truncate">
+                              <span className="text-sm shrink-0">{c.flag}</span>
+                              <span className="truncate">{c.name}</span>
+                            </span>
+                            <span className="font-mono text-[10px] text-[var(--text-muted)] shrink-0">(+{c.ddi})</span>
+                          </button>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
               
               <div className="col-span-3">
                 <label className="label">DDD *</label>
                 <input
+                  type="text"
                   value={novoDdd}
-                  onChange={(e) => setNovoDdd(e.target.value.replace(/\D/g, '').slice(0, 3))}
-                  placeholder="61"
-                  className="input !py-2.5 text-center"
+                  onChange={(e) => setNovoDdd(e.target.value.replace(/\D/g, '').slice(0, selectedCountry.dddLen))}
+                  placeholder={selectedCountry.placeholderDdd}
+                  maxLength={selectedCountry.dddLen}
+                  className="input !py-2.5 text-center font-mono font-medium"
                 />
               </div>
               
               <div className="col-span-5">
                 <label className="label">Número *</label>
                 <input
+                  type="text"
                   value={novoTel}
                   onChange={(e) => setNovoTel(e.target.value.replace(/\D/g, ''))}
-                  placeholder="900000000"
-                  className="input !py-2.5"
+                  placeholder={selectedCountry.placeholderTel}
+                  className="input !py-2.5 font-mono font-medium"
                 />
+              </div>
+
+              {/* Indicador Dinâmico do País e DDD identificado */}
+              <div className="col-span-12 mt-1.5 px-1 flex items-center gap-2 text-[11px] text-[var(--text-secondary)] animate-fadeIn">
+                <span className="w-1.5 h-1.5 rounded-full bg-[var(--brand)] animate-pulse shrink-0"></span>
+                <span>
+                  País: <strong className="text-[var(--text-primary)] font-semibold">{selectedCountry.flag} {selectedCountry.name} (+{selectedCountry.ddi})</strong>
+                  <span className="mx-2 text-[var(--border)]">|</span>
+                  DDD sugerido: <strong className="text-[var(--text-primary)] font-semibold">{selectedCountry.dddLen} dígitos</strong>
+                </span>
               </div>
             </div>
 
