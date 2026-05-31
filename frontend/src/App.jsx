@@ -149,15 +149,12 @@ function App() {
         {/* Brand Header */}
         <div className="px-6 pt-7 pb-6 z-10 border-b border-[var(--border-light)] relative">
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 bg-gradient-to-tr from-[#F40009] to-[#FF4D52] rounded-xl flex items-center justify-center relative overflow-hidden shadow-lg shadow-[#F40009]/20 transition-all hover:scale-105 active:scale-95 duration-200">
-              <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 2c-1.1 0-2 .9-2 2v1c0 .55.45 1 1 1h2c.55 0 1-.45 1-1V4c0-1.1-.9-2-2-2zm2 5h-4c-.55 0-1 .45-1 1v1.5c0 1.93 1.57 3.5 3.5 3.5s3.5-1.57 3.5-3.5V8c0-.55-.45-1-1-1zm1.75 6.25c-.2-.05-.4-.25-.4-.45 0-.55-.45-1-1-1h-3.7c-.55 0-1 .45-1 1 0 .2-.2.4-.4.45A4.5 4.5 0 006.5 17.5c0 2.48 2.02 4.5 4.5 4.5h2c2.48 0 4.5-2.02 4.5-4.5 0-1.85-1.12-3.44-2.75-4.25z" opacity="0.8" />
-                <path d="M8.5,18.5 Q12,20.5 15.5,18.5" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
-              </svg>
+            <div className="w-11 h-11 bg-white border border-[var(--border)] rounded-xl flex items-center justify-center relative overflow-hidden shadow-sm transition-all hover:scale-105 duration-200">
+              <img src="/logo-brasal.png" alt="Brasal Logo" className="w-9 h-9 object-contain" />
             </div>
             <div className="flex flex-col">
-              <span className="text-[17px] font-extrabold text-[var(--text-primary)] tracking-tight uppercase leading-none font-display">Coca-Cola</span>
-              <span className="text-[10px] font-bold text-[#F40009] tracking-[0.15em] uppercase mt-0.5">Smart Manager</span>
+              <span className="text-[16px] font-extrabold text-[var(--text-primary)] tracking-tight uppercase leading-none font-display">Brasal</span>
+              <span className="text-[9px] font-bold text-[#F40009] tracking-[0.12em] uppercase mt-0.5">Refrigerantes</span>
               <div className="flex items-center gap-1.5 mt-1.5">
                 <div className={`w-[7px] h-[7px] rounded-full ${botOnline ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} style={botOnline ? { boxShadow: '0 0 6px rgba(16,185,129,0.5)' } : {}} />
                 <span className={`text-[11px] font-semibold tracking-wide ${botOnline ? 'text-emerald-600' : 'text-rose-500'}`}>
