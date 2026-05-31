@@ -36,37 +36,63 @@ async function isAutorizado(message) {
   const numeroPuro = extrairNumero(message.from);
   const numeros = await prisma.numeroAutorizado.findMany({ where: { ativo: true } });
 
-  // 1) Match por numero ou LID (LID limpo, sem @lid)
+  // Encontra se algum número autorizado corresponde
+  let nCorrespondente = null;
   for (const n of numeros) {
     const lidLimpo = n.lid ? n.lid.replace(/@.*$/, '') : null;
-    if (numerosCorrespondem(n.numero, numeroPuro)) return true;
-    if (lidLimpo && lidLimpo === numeroPuro) return true;
+    if (numerosCorrespondem(n.numero, numeroPuro) || (lidLimpo && lidLimpo === numeroPuro)) {
+      nCorrespondente = n;
+      break;
+    }
   }
 
-  // 2) Resolve telefone real via contato (essencial para IDs no formato LID)
-  try {
-    const contact = await message.getContact();
-    const nome = contact.pushname || contact.name;
-    const telDoContato = extrairNumero(contact.id?._serialized || '');
-
-    if (telDoContato) {
-      for (const n of numeros) {
-        if (numerosCorrespondem(n.numero, telDoContato)) {
-          // Salva LID e nome automaticamente
-          const updates = {};
-          if (!n.lid || n.lid.includes('@')) updates.lid = numeroPuro;
-          if (!n.nome && nome) updates.nome = nome;
-          if (Object.keys(updates).length > 0) {
-            await prisma.numeroAutorizado.update({
-              where: { id: n.id },
-              data: updates,
-            }).catch(() => {});
+  // Se não achou por correspondência direta, tenta resolver via contato (essencial para IDs no formato LID)
+  if (!nCorrespondente) {
+    try {
+      const contact = await message.getContact();
+      const telDoContato = extrairNumero(contact.id?._serialized || '');
+      if (telDoContato) {
+        for (const n of numeros) {
+          if (numerosCorrespondem(n.numero, telDoContato)) {
+            nCorrespondente = n;
+            break;
           }
-          return true;
         }
       }
+    } catch (e) {}
+  }
+
+  // Se encontramos o número correspondente, atualizamos o LID e nome se necessário
+  if (nCorrespondente) {
+    try {
+      const contact = await message.getContact();
+      const nome = contact.pushname || contact.name;
+      
+      const updates = {};
+      // Salva o JID completo de message.from (ex: "5561999999999@c.us") no campo lid
+      if (!nCorrespondente.lid || nCorrespondente.lid !== message.from) {
+        updates.lid = message.from;
+      }
+      if (!nCorrespondente.nome && nome) {
+        updates.nome = nome;
+      }
+      
+      if (Object.keys(updates).length > 0) {
+        await prisma.numeroAutorizado.update({
+          where: { id: nCorrespondente.id },
+          data: updates,
+        }).catch(() => {});
+      }
+    } catch (e) {
+      if (!nCorrespondente.lid) {
+        await prisma.numeroAutorizado.update({
+          where: { id: nCorrespondente.id },
+          data: { lid: message.from },
+        }).catch(() => {});
+      }
     }
-  } catch (e) {}
+    return true;
+  }
 
   console.log(`[BOT] Numero nao autorizado: ${numeroPuro}`);
   return false;
@@ -518,8 +544,21 @@ async function enviarMensagemParaContato(conexaoId, numeroTelefone, lid, mensage
   const client = getClient(conexaoId);
   if (!client) throw new Error('Conexao nao encontrada ou offline');
 
-  // Tenta LID primeiro (WhatsApp migrou para este formato), senão usa telefone
-  const chatId = lid ? `${lid}@lid` : `${numeroTelefone}@c.us`;
+  let chatId;
+  if (lid) {
+    if (lid.includes('@')) {
+      chatId = lid;
+    } else {
+      // Se não tiver @, mas for puramente numérico e longo, é @c.us (JID padrão de contato)
+      if (/^\d+$/.test(lid) && lid.length >= 8 && !lid.startsWith('1203')) {
+        chatId = `${lid}@c.us`;
+      } else {
+        chatId = `${lid}@lid`;
+      }
+    }
+  } else {
+    chatId = numeroTelefone.includes('@') ? numeroTelefone : `${numeroTelefone}@c.us`;
+  }
 
   if ((tipo === 'imagem' || tipo === 'video') && mediaUrl) {
     const media = await getMediaObject(mediaUrl);

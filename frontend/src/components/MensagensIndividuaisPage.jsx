@@ -27,6 +27,16 @@ export default function MensagensIndividuaisPage() {
   const [selectedSetor, setSelectedSetor] = useState(null);
   const [selectedConexao, setSelectedConexao] = useState(null);
 
+  // Cache para conexões que já foram desbloqueadas nesta sessão
+  const [desbloqueadas, setDesbloqueadas] = useState(() => {
+    try {
+      const cached = sessionStorage.getItem('conexoes_desbloqueadas');
+      return cached ? JSON.parse(cached) : [];
+    } catch {
+      return [];
+    }
+  });
+
   // Estados de senha e contatos ao vivo do WhatsApp
   const [senhaPrompt, setSenhaPrompt] = useState(null);
   const [senhaInput, setSenhaInput] = useState('');
@@ -86,7 +96,7 @@ export default function MensagensIndividuaisPage() {
     : [];
 
   const handleSelecionarConexao = (conexao) => {
-    if (conexao.senha) {
+    if (conexao.senha && !desbloqueadas.includes(conexao.id)) {
       setSenhaPrompt(conexao);
       setSenhaInput('');
       setSenhaErro('');
@@ -100,6 +110,11 @@ export default function MensagensIndividuaisPage() {
     setSenhaErro('');
     try {
       await conexaoService.verificarSenha(senhaPrompt.id, senhaInput);
+      
+      const novas = [...desbloqueadas, senhaPrompt.id];
+      setDesbloqueadas(novas);
+      sessionStorage.setItem('conexoes_desbloqueadas', JSON.stringify(novas));
+      
       setSelectedConexao(senhaPrompt);
       setSenhaPrompt(null);
       setSenhaInput('');

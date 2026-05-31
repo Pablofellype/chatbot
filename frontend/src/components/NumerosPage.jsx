@@ -174,7 +174,7 @@ export default function NumerosPage() {
                 >
                   <span className="flex items-center gap-1.5 overflow-hidden">
                     <span className="text-base shrink-0">{selectedCountry.flag}</span>
-                    <span className="font-medium truncate text-xs">{selectedCountry.name}</span>
+                    <span className="font-semibold text-xs">+{selectedCountry.ddi}</span>
                   </span>
                   <svg className={`w-3.5 h-3.5 text-[var(--text-muted)] shrink-0 transition-transform duration-200 ${dropdownOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
@@ -285,16 +285,6 @@ export default function NumerosPage() {
             </div>
             
           </div>
-          
-          <div className="mb-4">
-            <label className="label">LID (Identificador Interno do WhatsApp)</label>
-            <input
-              value={novoLid}
-              onChange={(e) => setNovoLid(e.target.value)}
-              placeholder="Preenchido automaticamente ou informe caso tenha"
-              className="input !py-2.5"
-            />
-          </div>
 
           <div className="flex gap-2 justify-end pt-2 border-t border-[var(--border-light)]">
             <button type="button" onClick={() => setMostrarForm(false)} className="btn btn-ghost btn-sm">Cancelar</button>
@@ -362,7 +352,13 @@ export default function NumerosPage() {
                           {num.ativo ? 'Ativo' : 'Inativo'}
                         </span>
                       </div>
-                      {num.lid && <p className="text-xs text-[var(--text-faint)] mt-0.5">LID: {num.lid}</p>}
+                      <div className="mt-1">
+                        {num.lid ? (
+                          <span className="text-[10px] text-emerald-600 bg-emerald-50 border border-emerald-100 rounded px-1.5 py-0.5 font-semibold inline-block">WhatsApp Sincronizado</span>
+                        ) : (
+                          <span className="text-[10px] text-amber-600 bg-amber-50 border border-amber-100 rounded px-1.5 py-0.5 font-semibold inline-block">Aguardando primeira mensagem para sincronizar</span>
+                        )}
+                      </div>
                     </div>
                   </div>
                   <div className="flex gap-1.5">
