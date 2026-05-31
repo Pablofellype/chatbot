@@ -5,6 +5,7 @@ const {
   getStatusTodas,
   logoutConexao,
   destruirConexao,
+  listarContatos: listarContatosService,
 } = require('../services/whatsappService');
 
 const listar = async (req, res) => {
@@ -133,4 +134,15 @@ const verificarSenha = async (req, res) => {
   }
 };
 
-module.exports = { listar, criar, obterStatus, atualizar, deletar, logout, reconectar, verificarSenha };
+const listarContatos = async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const contatos = await listarContatosService(id);
+    res.json(contatos);
+  } catch (error) {
+    console.error('[ERRO API] Ao listar contatos:', error.message);
+    res.status(500).json({ erro: 'Erro ao listar contatos' });
+  }
+};
+
+module.exports = { listar, criar, obterStatus, atualizar, deletar, logout, reconectar, verificarSenha, listarContatos };

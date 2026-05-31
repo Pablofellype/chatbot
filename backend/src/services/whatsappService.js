@@ -536,6 +536,30 @@ async function destruirTodas() {
   conexoes.clear();
 }
 
+async function listarContatos(conexaoId) {
+  const client = getClient(conexaoId);
+  if (!client) return [];
+  try {
+    const contacts = await client.getContacts();
+    // Filtra contatos válidos (ex: que são pessoas, não grupos, não broadcasts, etc.)
+    const validos = contacts.filter((c) => !c.isGroup && c.id.user !== 'status' && !c.id.user.includes('broadcast') && c.number);
+    const result = [];
+    for (const c of validos) {
+      result.push({
+        id: c.id._serialized,
+        numero: c.number,
+        nome: c.name || c.pushname || c.number,
+        isMyContact: c.isMyContact
+      });
+    }
+    // Ordena por nome
+    return result.sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
+  } catch (e) {
+    console.error(`[WHATSAPP #${conexaoId}] Erro ao listar contatos:`, e.message);
+    return [];
+  }
+}
+
 module.exports = {
   initAllConexoes,
   destruirTodas,
@@ -546,6 +570,7 @@ module.exports = {
   destruirConexao,
   getClient,
   listarGrupos,
+  listarContatos,
   enviarMensagemParaGrupo,
   enviarMensagemParaContato,
 };

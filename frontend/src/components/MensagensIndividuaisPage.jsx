@@ -27,6 +27,13 @@ export default function MensagensIndividuaisPage() {
   const [selectedSetor, setSelectedSetor] = useState(null);
   const [selectedConexao, setSelectedConexao] = useState(null);
 
+  // Estados de senha e contatos ao vivo do WhatsApp
+  const [senhaPrompt, setSenhaPrompt] = useState(null);
+  const [senhaInput, setSenhaInput] = useState('');
+  const [senhaErro, setSenhaErro] = useState('');
+  const [contatosWhatsApp, setContatosWhatsApp] = useState([]);
+  const [loadingContatos, setLoadingContatos] = useState(false);
+
   const carregar = async () => {
     try {
       const [m, n, c] = await Promise.all([
@@ -41,7 +48,30 @@ export default function MensagensIndividuaisPage() {
     finally { setLoading(false); }
   };
 
-  useEffect(() => { carregar(); }, []);
+  const carregarContatosWhatsApp = async (conexaoId) => {
+    setLoadingContatos(true);
+    try {
+      const { data } = await conexaoService.contatos(conexaoId);
+      setContatosWhatsApp(data);
+    } catch (e) {
+      console.error('Erro ao carregar contatos do WhatsApp:', e);
+      setContatosWhatsApp([]);
+    } finally {
+      setLoadingContatos(false);
+    }
+  };
+
+  useEffect(() => {
+    carregar();
+  }, []);
+
+  useEffect(() => {
+    if (selectedConexao) {
+      carregarContatosWhatsApp(selectedConexao.id);
+    } else {
+      setContatosWhatsApp([]);
+    }
+  }, [selectedConexao]);
 
   // Agrupar conexões por setor (nome)
   const setores = {};
@@ -55,11 +85,60 @@ export default function MensagensIndividuaisPage() {
     ? mensagens.filter(m => m.conexaoId === selectedConexao.id)
     : [];
 
+  const handleSelecionarConexao = (conexao) => {
+    if (conexao.senha) {
+      setSenhaPrompt(conexao);
+      setSenhaInput('');
+      setSenhaErro('');
+    } else {
+      setSelectedConexao(conexao);
+    }
+  };
+
+  const handleConfirmarSenha = async (e) => {
+    e.preventDefault();
+    setSenhaErro('');
+    try {
+      await conexaoService.verificarSenha(senhaPrompt.id, senhaInput);
+      setSelectedConexao(senhaPrompt);
+      setSenhaPrompt(null);
+      setSenhaInput('');
+    } catch (error) {
+      setSenhaErro(error.response?.data?.erro || 'Senha incorreta');
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.nome || !form.mensagem || !form.numeroId || !form.horario) return;
+
+    let targetNumeroId = form.numeroId;
+
+    // Se o numeroId começa com "wa-", cadastramos o número dinamicamente no banco antes
+    if (String(targetNumeroId).startsWith('wa-')) {
+      const payloadStr = targetNumeroId.replace('wa-', '');
+      const [numero, nome] = payloadStr.split('|');
+      try {
+        const { data: novoNum } = await numeroService.criar({ 
+          numero, 
+          nome: nome || 'Contato WhatsApp',
+        });
+        
+        // Associa o novo número à conexão correspondente no banco de dados
+        await numeroService.atualizar(novoNum.id, { conexaoId: selectedConexao.id });
+        
+        targetNumeroId = String(novoNum.id);
+        // Atualiza a lista de números autorizados localmente
+        await carregar();
+      } catch (err) {
+        alert(err.response?.data?.erro || 'Erro ao registrar contato no banco');
+        return;
+      }
+    }
+
     const dados = {
       ...form,
+      numeroId: targetNumeroId,
       conexaoId: String(selectedConexao.id),
       diasSemana: form.frequencia === 'semanal' ? form.diasSemana : null,
       mediaUrl: form.mediaUrl || null,
@@ -147,12 +226,27 @@ export default function MensagensIndividuaisPage() {
             <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-4">{editandoId ? 'Editar' : 'Nova'} Mensagem</h3>
             <div className="grid grid-cols-2 gap-4 mb-4">
               <div>
-                <label className="label">Para quem enviar *</label>
+                <label className="label">Para quem enviar {loadingContatos ? ' (carregando contatos...)' : ''} *</label>
                 <select value={form.numeroId} onChange={(e) => setForm({ ...form, numeroId: e.target.value })} className="input">
                   <option value="">Selecione o contato...</option>
-                  {numeros.map(n => (
-                    <option key={n.id} value={n.id}>{n.nome ? `${n.nome} (${formatarNumero(n.numero)})` : formatarNumero(n.numero)}</option>
-                  ))}
+                  
+                  {contatosWhatsApp.length > 0 && (
+                    <optgroup label="Contatos do seu WhatsApp (Celular)">
+                      {contatosWhatsApp.map(c => (
+                        <option key={c.id} value={`wa-${c.numero}|${c.nome}`}>
+                          👤 {c.nome} (+{c.numero})
+                        </option>
+                      ))}
+                    </optgroup>
+                  )}
+                  
+                  <optgroup label="Números Cadastrados no Painel">
+                    {numeros.map(n => (
+                      <option key={n.id} value={n.id}>
+                        📌 {n.nome ? `${n.nome} (${formatarNumero(n.numero)})` : formatarNumero(n.numero)}
+                      </option>
+                    ))}
+                  </optgroup>
                 </select>
               </div>
               <div>
@@ -278,7 +372,7 @@ export default function MensagensIndividuaisPage() {
             const msgsCount = mensagens.filter(m => m.conexaoId === c.id).length;
             const online = c.status?.connected;
             return (
-              <button key={c.id} onClick={() => setSelectedConexao(c)}
+              <button key={c.id} onClick={() => handleSelecionarConexao(c)}
                 className="w-full card card-interactive p-5 flex items-center gap-4 cursor-pointer text-left animate-fadeIn">
                 <div className={`w-3 h-3 rounded-full shrink-0 ${online ? 'bg-emerald-500 shadow-sm shadow-emerald-500/50' : 'bg-[var(--text-muted)]'}`} />
                 <div className="flex-1 min-w-0">
@@ -299,6 +393,35 @@ export default function MensagensIndividuaisPage() {
             );
           })}
         </div>
+
+        {/* Modal de Senha Premium (Vermelho e Branco) */}
+        {senhaPrompt && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn">
+            <form onSubmit={handleConfirmarSenha} className="card p-6 w-full max-w-sm border border-[var(--border)] shadow-xl animate-fadeInScale bg-white">
+              <div className="flex items-center gap-2 mb-4 text-[#F40009]">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" /></svg>
+                <h3 className="font-semibold text-sm">Acesso Restrito</h3>
+              </div>
+              <p className="text-xs text-[var(--text-secondary)] mb-4">Insira a senha do número <strong>{senhaPrompt.apelido || senhaPrompt.nome}</strong> para acessar os agendamentos:</p>
+              
+              <input
+                type="password"
+                value={senhaInput}
+                onChange={(e) => setSenhaInput(e.target.value)}
+                placeholder="Senha da conexão"
+                autoFocus
+                className="input mb-3"
+              />
+              
+              {senhaErro && <p className="text-xs text-red-500 mb-3">{senhaErro}</p>}
+              
+              <div className="flex gap-2 justify-end">
+                <button type="button" onClick={() => setSenhaPrompt(null)} className="btn btn-ghost btn-sm">Cancelar</button>
+                <button type="submit" className="btn btn-primary btn-md">Acessar</button>
+              </div>
+            </form>
+          </div>
+        )}
       </div>
     );
   }
