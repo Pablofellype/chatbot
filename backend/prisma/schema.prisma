@@ -1,0 +1,99 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Conexao {
+  id                  Int                  @id @default(autoincrement())
+  nome                String
+  apelido             String?
+  senha               String?
+  ativo               Boolean              @default(true)
+  criadoEm            DateTime             @default(now())
+  fluxos              Fluxo[]
+  conversas           Conversa[]
+  mensagensAutomaticas  MensagemAutomatica[]
+  mensagensIndividuais  MensagemIndividual[]
+  responsaveis          NumeroAutorizado[]
+}
+
+model MensagemAutomatica {
+  id            Int      @id @default(autoincrement())
+  nome          String
+  mensagem      String
+  tipo          String   @default("texto")
+  mediaUrl      String?
+  grupoId       String
+  grupoNome     String
+  conexaoId     Int
+  conexao       Conexao  @relation(fields: [conexaoId], references: [id])
+  frequencia    String   @default("diario")
+  diasSemana    String?
+  horario       String
+  ativo         Boolean  @default(true)
+  ultimoEnvio   DateTime?
+  criadoEm      DateTime @default(now())
+  atualizadoEm  DateTime @updatedAt
+}
+
+model Fluxo {
+  id             Int      @id @default(autoincrement())
+  nome           String
+  gatilhos       String
+  ativo          Boolean  @default(true)
+  horarioInicio  String?
+  horarioFim     String?
+  msgForaHorario String?
+  mapa           String   @default("{\"nodes\":[],\"edges\":[]}")
+  conexaoId      Int?
+  conexao        Conexao? @relation(fields: [conexaoId], references: [id])
+  criadoEm       DateTime @default(now())
+  atualizadoEm   DateTime @updatedAt
+}
+
+model Conversa {
+  id           Int      @id @default(autoincrement())
+  numero       String
+  fluxoId      Int?
+  nodeAtual    String?
+  conexaoId    Int?
+  conexao      Conexao? @relation(fields: [conexaoId], references: [id])
+  atualizadoEm DateTime @updatedAt
+
+  @@unique([numero, conexaoId])
+}
+
+model NumeroAutorizado {
+  id                    Int                  @id @default(autoincrement())
+  numero                String               @unique
+  nome                  String?
+  lid                   String?
+  ativo                 Boolean              @default(true)
+  conexaoId             Int?
+  conexao               Conexao?             @relation(fields: [conexaoId], references: [id])
+  criadoEm              DateTime             @default(now())
+  mensagensIndividuais  MensagemIndividual[]
+}
+
+model MensagemIndividual {
+  id            Int              @id @default(autoincrement())
+  nome          String
+  mensagem      String
+  tipo          String           @default("texto")
+  mediaUrl      String?
+  numeroId      Int
+  numero        NumeroAutorizado @relation(fields: [numeroId], references: [id])
+  conexaoId     Int
+  conexao       Conexao          @relation(fields: [conexaoId], references: [id])
+  frequencia    String           @default("uma_vez")
+  diasSemana    String?
+  horario       String
+  ativo         Boolean          @default(true)
+  ultimoEnvio   DateTime?
+  criadoEm      DateTime         @default(now())
+  atualizadoEm  DateTime         @updatedAt
+}

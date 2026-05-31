@@ -1,0 +1,13 @@
+{
+  "name": "chatbot-whatsapp",
+  "version": "1.0.0",
+  "description": "Sistema de atendimento WhatsApp multi-conexao",
+  "scripts": {
+    "install:all": "cd frontend && npm install && cd ../backend && npm install",
+    "build": "cd frontend && npm run build",
+    "start": "cd backend && node src/index.js",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "deploy": "npm run build && npm run start"
+  }
+}
