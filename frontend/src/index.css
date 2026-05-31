@@ -206,22 +206,24 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
   -webkit-backdrop-filter: blur(16px) saturate(180%);
 }
 
-/* Beautiful Pristine Glass Sidebar with Coca-Cola Accents - Pristine Coca-Cola Dark Glass Sidebar */
+/* Beautiful Pristine Glass Sidebar with Coca-Cola Accents - Pristine Coca-Cola Light Glass Sidebar */
 aside {
-  background: linear-gradient(180deg, #110203 0%, #070102 100%) !important;
-  border-right: 1px solid rgba(255, 255, 255, 0.06) !important;
+  background: rgba(255, 255, 255, 0.85) !important;
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-right: 1px solid var(--border) !important;
   position: relative;
   width: 260px !important;
-  box-shadow: 6px 0 24px rgba(0, 0, 0, 0.35);
+  box-shadow: 4px 0 20px rgba(15, 23, 42, 0.02);
   display: flex;
-  flex-direction: flex-col;
+  flex-direction: column;
   flex-shrink: 0;
   overflow: hidden;
 }
 
 [data-theme="dark"] aside {
-  background: linear-gradient(180deg, #090001 0%, #020000 100%) !important;
-  border-right: 1px solid rgba(255, 255, 255, 0.04) !important;
+  background: rgba(15, 23, 42, 0.85) !important;
+  border-right: 1px solid var(--border) !important;
 }
 
 aside .sidebar-item {
@@ -235,25 +237,24 @@ aside .sidebar-item {
   text-align: left;
   font-size: 13.5px;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.65) !important;
+  color: var(--text-secondary) !important;
   transition: all 180ms cubic-bezier(.22, .78, .24, 1);
   border: 1px solid transparent !important;
   cursor: pointer;
 }
 
 aside .sidebar-item svg {
-  color: rgba(255, 255, 255, 0.45);
+  color: var(--text-faint);
   transition: all 180ms cubic-bezier(.22, .78, .24, 1);
 }
 
 aside .sidebar-item:hover {
-  color: #ffffff !important;
-  background: rgba(255, 255, 255, 0.05) !important;
-  border-color: rgba(255, 255, 255, 0.03) !important;
+  color: var(--text-primary) !important;
+  background: var(--surface-sunken) !important;
 }
 
 aside .sidebar-item:hover svg {
-  color: rgba(255, 255, 255, 0.85);
+  color: var(--text-secondary);
   transform: translateX(2px);
 }
 
@@ -263,10 +264,10 @@ aside .sidebar-item:active {
 
 aside .sidebar-item-active {
   color: #ffffff !important;
-  background: rgba(244, 0, 9, 0.16) !important;
+  background: #F40009 !important;
   font-weight: 600;
-  border: 1px solid rgba(244, 0, 9, 0.3) !important;
-  box-shadow: 0 4px 16px rgba(244, 0, 9, 0.15);
+  border: 1px solid #F40009 !important;
+  box-shadow: 0 4px 16px rgba(244, 0, 9, 0.22);
 }
 
 aside .sidebar-item-active svg {
@@ -282,55 +283,20 @@ aside .sidebar-item-active::before {
   transform: translateY(-50%);
   width: 3.5px;
   height: 18px;
-  background: #F40009;
+  background: #ffffff;
   border-radius: 0 4px 4px 0;
-  box-shadow: 0 0 8px #F40009;
 }
 
 aside h1 {
-  color: #ffffff !important;
+  color: var(--text-primary) !important;
 }
 
 aside p {
-  color: rgba(255, 255, 255, 0.4) !important;
+  color: var(--text-muted) !important;
 }
 
 aside div.border-t {
-  border-color: rgba(255, 255, 255, 0.06) !important;
-}
-
-/* Coca-Cola Sidebar Fizzy Bubbles */
-.fizzy-bubbles {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  pointer-events: none;
-  z-index: 1;
-  opacity: 0.18;
-}
-.bubble {
-  position: absolute;
-  bottom: -20px;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.05) 80%);
-  border-radius: 50%;
-  animation: rise infinite linear;
-  border: 0.5px solid rgba(255, 255, 255, 0.3);
-}
-@keyframes rise {
-  0% {
-    transform: translateY(0) scale(0.5);
-    opacity: 0;
-  }
-  10% {
-    opacity: 0.8;
-  }
-  90% {
-    opacity: 0.8;
-  }
-  100% {
-    transform: translateY(-500px) scale(1.3);
-    opacity: 0;
-  }
+  border-color: var(--border-light) !important;
 }
 
 /* ==================== CARD SYSTEM ==================== */

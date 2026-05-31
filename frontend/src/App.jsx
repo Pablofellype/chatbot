@@ -146,18 +146,8 @@ function App() {
     <div className="min-h-screen flex font-['Barlow'] transition-colors duration-200" style={{ background: 'var(--bg)' }}>
       {/* ─── SIDEBAR ─── */}
       <aside className="w-[260px] flex flex-col shrink-0 relative overflow-hidden">
-        {/* Ambient Coca-Cola Fizz Rising Bubbles */}
-        <div className="fizzy-bubbles">
-          <div className="bubble" style={{ left: '8%', width: '6px', height: '6px', animationDelay: '0s', animationDuration: '7s' }} />
-          <div className="bubble" style={{ left: '22%', width: '10px', height: '10px', animationDelay: '1.2s', animationDuration: '6s' }} />
-          <div className="bubble" style={{ left: '38%', width: '5px', height: '5px', animationDelay: '3s', animationDuration: '8s' }} />
-          <div className="bubble" style={{ left: '55%', width: '9px', height: '9px', animationDelay: '0.5s', animationDuration: '6.5s' }} />
-          <div className="bubble" style={{ left: '72%', width: '12px', height: '12px', animationDelay: '2.5s', animationDuration: '7.5s' }} />
-          <div className="bubble" style={{ left: '88%', width: '7px', height: '7px', animationDelay: '4.2s', animationDuration: '5.5s' }} />
-        </div>
-
         {/* Brand Header */}
-        <div className="px-6 pt-7 pb-6 z-10 border-b border-white/5 relative">
+        <div className="px-6 pt-7 pb-6 z-10 border-b border-[var(--border-light)] relative">
           <div className="flex items-center gap-3">
             <div className="w-11 h-11 bg-gradient-to-tr from-[#F40009] to-[#FF4D52] rounded-xl flex items-center justify-center relative overflow-hidden shadow-lg shadow-[#F40009]/20 transition-all hover:scale-105 active:scale-95 duration-200">
               <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
@@ -166,17 +156,17 @@ function App() {
               </svg>
             </div>
             <div className="flex flex-col">
-              <span className="text-[17px] font-extrabold text-white tracking-tight uppercase leading-none font-display">Coca-Cola</span>
+              <span className="text-[17px] font-extrabold text-[var(--text-primary)] tracking-tight uppercase leading-none font-display">Coca-Cola</span>
               <span className="text-[10px] font-bold text-[#F40009] tracking-[0.15em] uppercase mt-0.5">Smart Manager</span>
             </div>
           </div>
           
           {/* Real-time connection status */}
-          <div className="mt-4 flex items-center justify-between bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 backdrop-blur-sm">
-            <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">Servidor</span>
+          <div className="mt-4 flex items-center justify-between bg-[var(--surface-sunken)] border border-[var(--border)] rounded-lg px-3 py-1.5 backdrop-blur-sm">
+            <span className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider">Servidor</span>
             <div className="flex items-center gap-1.5">
-              <div className={`w-2 h-2 rounded-full ${botOnline ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} style={botOnline ? { boxShadow: '0 0 8px rgba(16,185,129,0.7)' } : { boxShadow: '0 0 8px rgba(244,63,94,0.7)' }} />
-              <span className={`text-[10px] font-bold uppercase tracking-wider ${botOnline ? 'text-emerald-400' : 'text-rose-400'}`}>
+              <div className={`w-2 h-2 rounded-full ${botOnline ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} style={botOnline ? { boxShadow: '0 0 8px rgba(16,185,129,0.5)' } : { boxShadow: '0 0 8px rgba(244,63,94,0.5)' }} />
+              <span className={`text-[10px] font-bold uppercase tracking-wider ${botOnline ? 'text-emerald-600' : 'text-rose-600'}`}>
                 {botOnline ? 'Online' : 'Offline'}
               </span>
             </div>
@@ -185,7 +175,7 @@ function App() {
 
         {/* Nav */}
         <nav className="flex-1 px-4 py-6 space-y-1.5 z-10 overflow-y-auto">
-          <p className="text-[10px] font-bold text-stone-500 uppercase tracking-[0.1em] px-3 mb-2">Menu</p>
+          <p className="text-[10px] font-bold text-[var(--text-faint)] uppercase tracking-[0.1em] px-3 mb-2">Menu</p>
           {menuItems.map((item) => (
             <button
               key={item.id}
@@ -199,8 +189,8 @@ function App() {
         </nav>
 
         {/* --- IA COPILOT SUGGESTIONS PANEL --- */}
-        <div className="mx-4 mb-4 p-4 rounded-xl border bg-gradient-to-br from-[#1F0708] to-[#120404] border-[#F40009]/20 relative overflow-hidden group shadow-lg shadow-black/40 z-10 transition-all hover:border-[#F40009]/40">
-          <div className="absolute inset-0 bg-radial-gradient(circle, rgba(244, 0, 9, 0.08) 0%, transparent 80%) opacity-70" />
+        <div className="mx-4 mb-4 p-4 rounded-xl border bg-gradient-to-br from-[#FFF5F5] to-[#FEF2F2] border-[#F40009]/15 relative overflow-hidden group shadow-sm z-10 transition-all hover:border-[#F40009]/30">
+          <div className="absolute inset-0 bg-radial-gradient(circle, rgba(244, 0, 9, 0.04) 0%, transparent 80%) opacity-70" />
           <div className="flex items-center gap-2 mb-2 relative z-10">
             <span className="flex h-2 w-2 relative">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#F40009] opacity-75"></span>
@@ -208,13 +198,13 @@ function App() {
             </span>
             <p className="text-[10px] font-extrabold text-[#F40009] tracking-widest uppercase">Coca-Cola AI Copilot</p>
           </div>
-          <p className="text-[11.5px] text-stone-200 font-medium leading-relaxed relative z-10 min-h-[36px] transition-all duration-300">
+          <p className="text-[11.5px] text-[var(--text-secondary)] font-medium leading-relaxed relative z-10 min-h-[36px] transition-all duration-300">
             {sugestoesIA[sugestaoIndex]}
           </p>
         </div>
 
         {/* Elegant glowing ribbon wave */}
-        <div className="absolute bottom-16 left-0 w-full overflow-hidden pointer-events-none opacity-[0.08] select-none h-16 z-0">
+        <div className="absolute bottom-16 left-0 w-full overflow-hidden pointer-events-none opacity-[0.06] select-none h-16 z-0">
           <svg className="absolute bottom-0 left-0 w-[120%] text-[#F40009]" viewBox="0 0 220 60" fill="currentColor">
             <path d="M0,25 Q60,45 120,20 T240,25 L240,60 L0,60 Z" />
             <path d="M0,35 Q60,50 120,35 T240,40 L240,60 L0,60 Z" opacity="0.4" />
@@ -222,11 +212,11 @@ function App() {
         </div>
 
         {/* Footer with Dark Mode Switch */}
-        <div className="px-6 py-4 border-t border-white/5 flex items-center justify-between z-10 bg-transparent">
-          <p className="text-[10px] text-stone-500 font-medium">Painel Admin v1.2</p>
+        <div className="px-6 py-4 border-t border-[var(--border-light)] flex items-center justify-between z-10 bg-transparent">
+          <p className="text-[10px] text-[var(--text-faint)] font-medium">Painel Admin v1.2</p>
           <button
             onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
-            className="w-7 h-7 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-stone-400 hover:text-white cursor-pointer transition-all border border-white/10 active:scale-95"
+            className="w-7 h-7 rounded-lg bg-[var(--surface-sunken)] hover:bg-[var(--border)] flex items-center justify-center text-[var(--text-secondary)] cursor-pointer transition-all border border-[var(--border)] active:scale-95"
             title={theme === 'light' ? 'Ativar Modo Escuro' : 'Ativar Modo Claro'}
           >
             {theme === 'light' ? (
