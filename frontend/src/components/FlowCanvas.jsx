@@ -112,6 +112,14 @@ function FlowEditor({ fluxo, conexoes = [], onSalvar, onVoltar }) {
     if (node.type !== 'startNode') setSelectedNode(node);
   }, []);
 
+  const onEdgeClick = useCallback((event, edge) => {
+    event.stopPropagation();
+    if (confirm('Deseja desconectar esta linha de ligação?')) {
+      setEdges((eds) => eds.filter((e) => e.id !== edge.id));
+      setTimeout(saveHistory, 0);
+    }
+  }, [setEdges, saveHistory]);
+
   const onPaneClick = useCallback(() => setSelectedNode(null), []);
 
   const onNodeChange = useCallback((updatedNode) => {
@@ -330,7 +338,7 @@ function FlowEditor({ fluxo, conexoes = [], onSalvar, onVoltar }) {
               <ReactFlow
                 nodes={nodes} edges={edges}
                 onNodesChange={onNodesChange} onEdgesChange={onEdgesChange}
-                onConnect={onConnect} onNodeClick={onNodeClick} onPaneClick={onPaneClick}
+                onConnect={onConnect} onNodeClick={onNodeClick} onEdgeClick={onEdgeClick} onPaneClick={onPaneClick}
                 nodeTypes={nodeTypes} defaultEdgeOptions={defaultEdgeOptions}
                 fitView className="bg-slate-50" deleteKeyCode="Delete"
               >
