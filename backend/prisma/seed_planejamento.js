@@ -10,17 +10,18 @@ const main = async () => {
   const gatilhos = "planejamento, administrativo, rotina, material, nps, limpeza";
   const msgForaHorario = "Estamos fora do horário de atendimento do Planejamento Administrativo.";
   
+  // --- Nós com Posicionamento Horizontal Premium (Left-to-Right) ---
   const nodes = [
     {
       id: "start",
       type: "startNode",
-      position: { x: 0, y: 0 },
+      position: { x: 0, y: 300 },
       data: {}
     },
     {
       id: "menu_principal",
       type: "menuNode",
-      position: { x: 0, y: 150 },
+      position: { x: 200, y: 300 },
       data: {
         text: "🏢 *Planejamento Administrativo - Brasal Refrigerantes*\n\nComo posso te ajudar hoje? Selecione uma das opções abaixo:",
         opcoes: [
@@ -33,7 +34,7 @@ const main = async () => {
     {
       id: "link_material",
       type: "linkNode",
-      position: { x: -350, y: 450 },
+      position: { x: 620, y: 30 },
       data: {
         text: "📦 *Pedido de Material (DML/Escritório)*\n\nVocê pode realizar o seu pedido de inventário e materiais internos acessando o link oficial abaixo:",
         url: "https://inventario-internoo.vercel.app/"
@@ -42,7 +43,7 @@ const main = async () => {
     {
       id: "link_limpeza",
       type: "linkNode",
-      position: { x: 350, y: 450 },
+      position: { x: 620, y: 570 },
       data: {
         text: "🧹 *Portal da Limpeza Brasal*\n\nPara visualizar a aderência de QR Codes e acompanhar o site oficial da limpeza, clique no link abaixo:",
         url: "https://sites.google.com/view/limpezabrasal"
@@ -51,7 +52,7 @@ const main = async () => {
     {
       id: "menu_areas",
       type: "menuNode",
-      position: { x: 0, y: 450 },
+      position: { x: 620, y: 300 },
       data: {
         text: "📊 *NPS e Rotinas por Área*\n\nSelecione o seu setor/área abaixo para receber o QR Code correspondente e a rotina do setor:",
         opcoes: [
@@ -71,11 +72,11 @@ const main = async () => {
         ]
       }
     },
-    // --- Novos Nós de Pós-Atendimento e Avaliação Infinitos ---
+    // --- Nós de Pós-Atendimento e Avaliação Infinitos à Direita ---
     {
       id: "menu_pos_atendimento",
       type: "menuNode",
-      position: { x: 0, y: 1200 },
+      position: { x: 1550, y: 300 },
       data: {
         text: "🔄 *O que gostaria de fazer agora?*\n\nSelecione uma opção:",
         opcoes: [
@@ -87,7 +88,7 @@ const main = async () => {
     {
       id: "menu_avaliacao",
       type: "menuNode",
-      position: { x: 320, y: 1450 },
+      position: { x: 1950, y: 300 },
       data: {
         text: "📊 *Avaliação do Atendimento*\n\nDe *0 a 10*, o quão útil este assistente de Planejamento Administrativo foi para você?",
         opcoes: [
@@ -108,7 +109,7 @@ const main = async () => {
     {
       id: "msg_agradecimento",
       type: "messageNode",
-      position: { x: 320, y: 1950 },
+      position: { x: 2350, y: 300 },
       data: {
         text: "❤️ *Muito obrigado!*\n\nSua avaliação foi registrada com sucesso no sistema. Sua opinião nos ajuda a melhorar constantemente!\n\nTenha um excelente dia de trabalho na Brasal Refrigerantes! 🥤"
       }
@@ -121,9 +122,9 @@ const main = async () => {
       animated: true,
       style: { stroke: "#94a3b8", strokeWidth: 1.5 },
       source: "start",
-      sourceHandle: "bottom",
+      sourceHandle: "right",
       target: "menu_principal",
-      targetHandle: "top",
+      targetHandle: "left",
       id: "edge_start_to_principal"
     },
     {
@@ -133,7 +134,7 @@ const main = async () => {
       source: "menu_principal",
       sourceHandle: "opt_principal_material",
       target: "link_material",
-      targetHandle: "top",
+      targetHandle: "left",
       id: "edge_principal_to_material"
     },
     {
@@ -143,7 +144,7 @@ const main = async () => {
       source: "menu_principal",
       sourceHandle: "opt_principal_limpeza",
       target: "link_limpeza",
-      targetHandle: "top",
+      targetHandle: "left",
       id: "edge_principal_to_limpeza"
     },
     {
@@ -153,7 +154,7 @@ const main = async () => {
       source: "menu_principal",
       sourceHandle: "opt_principal_nps",
       target: "menu_areas",
-      targetHandle: "top",
+      targetHandle: "left",
       id: "edge_principal_to_areas"
     },
     
@@ -163,9 +164,9 @@ const main = async () => {
       animated: true,
       style: { stroke: "#94a3b8", strokeWidth: 1.5 },
       source: "link_material",
-      sourceHandle: "bottom",
+      sourceHandle: "right",
       target: "menu_pos_atendimento",
-      targetHandle: "top",
+      targetHandle: "left",
       id: "edge_material_to_pos"
     },
     {
@@ -173,9 +174,9 @@ const main = async () => {
       animated: true,
       style: { stroke: "#94a3b8", strokeWidth: 1.5 },
       source: "link_limpeza",
-      sourceHandle: "bottom",
+      sourceHandle: "right",
       target: "menu_pos_atendimento",
-      targetHandle: "top",
+      targetHandle: "left",
       id: "edge_limpeza_to_pos"
     },
 
@@ -187,7 +188,7 @@ const main = async () => {
       source: "menu_pos_atendimento",
       sourceHandle: "opt_pos_voltar",
       target: "menu_principal",
-      targetHandle: "top",
+      targetHandle: "left",
       id: "edge_pos_voltar_to_principal"
     },
     {
@@ -197,7 +198,7 @@ const main = async () => {
       source: "menu_pos_atendimento",
       sourceHandle: "opt_pos_encerrar",
       target: "menu_avaliacao",
-      targetHandle: "top",
+      targetHandle: "left",
       id: "edge_pos_encerrar_to_avaliacao"
     }
   ];
@@ -211,7 +212,7 @@ const main = async () => {
       source: "menu_avaliacao",
       sourceHandle: `opt_av_${idx}`,
       target: "msg_agradecimento",
-      targetHandle: "top",
+      targetHandle: "left",
       id: `edge_av_${idx}_to_agradecimento`
     });
   }
@@ -221,7 +222,7 @@ const main = async () => {
     { key: "adm", name: "Administrativo", file: "administrative.png", routine: "• 08:00 - Alinhamento diário e leitura de e-mails\\n• 10:00 - Faturamento e conciliação de contas\\n• 14:00 - Acompanhamento de KPIs do setor\\n• 17:00 - Fechamento de relatórios de produtividade" },
     { key: "ceilandia", name: "Ceilândia", file: "ceilandia.png", routine: "• 06:00 - Abertura do pátio de distribuição\\n• 08:00 - Liberação e roteirização da frota\\n• 12:00 - Conferência física de retornos de rota\\n• 16:00 - Fechamento do caixa diário da unidade" },
     { key: "fenix", name: "Fênix", file: "fenix.png", routine: "• 07:30 - DDS operacional (Diálogo Diário de Segurança)\\n• 09:00 - Roteirização de carregamento prioritário\\n• 13:00 - Autoria de qualidade de paletes\\n• 17:00 - Inventário rotativo de alta rotatividade" },
-    { key: "diretoria", name: "Diretoria", file: "diretoria.png", routine: "• 09:00 - Reunião executiva de resultados (BI)\\n• 11:00 - Análise de CAPEX e OPEX administrativo\\n• 14:30 - Alinhamento estratégico com lideranças\\n• 16:30 - Assinatura e homologação de contratos" },
+    { key: "diretoria", name: "Diretoria", file: "diretoria.png", routine: "• 09:00 - Reunião executiva de resultados (BI)\\n• 11:00 - Análise de CAPEX e OPEX administrativo\\n• 14:30 - Alinhamento strategic com lideranças\\n• 16:30 - Assinatura e homologação de contratos" },
     { key: "sia", name: "SIA", file: "sia.png", routine: "• 07:00 - Briefing operacional matinal\\n• 09:00 - Liberação de cargas expressas\\n• 13:30 - Monitoramento do fluxo de pátio e frota\\n• 16:00 - Fechamento de manifestos e notas fiscais" },
     { key: "conceito", name: "Loja Conceito", file: "loja conceito.png", routine: "• 09:00 - Abertura e checagem de vitrines e PDV\\n• 10:30 - Atendimento e vendas diretas\\n• 14:00 - Reposição de estoque de produtos refrigerados\\n• 18:00 - Fechamento do caixa e conciliação de cartões" },
     { key: "verdes", name: "Áreas Verdes", file: "areas verdes.png", routine: "• 07:00 - Distribuição de equipes nos jardins e plantas\\n• 08:30 - Poda, adubação e irrigação matinal\\n• 13:00 - Manutenção e limpeza de canteiros e gramados\\n• 15:30 - Vistoria de controle fitossanitário" },
@@ -233,21 +234,21 @@ const main = async () => {
   ];
 
   areas.forEach((a, idx) => {
-    const colIndex = idx - 6; // de -6 a +6
-    const xPos = colIndex * 260;
+    const rowIndex = idx - 6; // de -6 a +6
+    const yPos = 300 + rowIndex * 210; // Espaçamento vertical perfeito
     const nodeId = `img_${a.key}`;
 
     nodes.push({
       id: nodeId,
       type: "imageNode",
-      position: { x: xPos, y: 780 },
+      position: { x: 1100, y: yPos },
       data: {
         url: `/uploads/${a.file}`,
         caption: `📊 *NPS da Área: ${a.name}*\n\n📋 *Rotina do Setor:*\n${a.routine}`
       }
     });
 
-    // Conecta a opção do menu de áreas à respectiva imagem usando curvas suaves
+    // Conecta a opção do menu de áreas à respectiva imagem usando curvas suaves de forma lateral
     edges.push({
       type: "default",
       animated: true,
@@ -255,19 +256,19 @@ const main = async () => {
       source: "menu_areas",
       sourceHandle: `opt_area_${a.key}`,
       target: nodeId,
-      targetHandle: "top",
+      targetHandle: "left",
       id: `edge_areas_to_${a.key}`
     });
 
-    // Conecta a saída da imagem de cada área diretamente ao Menu de Pós-Atendimento usando curvas suaves
+    // Conecta a saída da imagem de cada área diretamente ao Menu de Pós-Atendimento de forma lateral
     edges.push({
       type: "default",
       animated: true,
       style: { stroke: "#94a3b8", strokeWidth: 1.5 },
       source: nodeId,
-      sourceHandle: "bottom",
+      sourceHandle: "right",
       target: "menu_pos_atendimento",
-      targetHandle: "top",
+      targetHandle: "left",
       id: `edge_${a.key}_to_pos`
     });
   });
@@ -290,7 +291,7 @@ const main = async () => {
     }
   });
 
-  console.log("Novo fluxo com curvas estilo n8n criado com sucesso! ID:", novoFluxo.id);
+  console.log("Novo fluxo horizontal estilo n8n criado com sucesso! ID:", novoFluxo.id);
 };
 
 main()
