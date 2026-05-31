@@ -29,7 +29,7 @@ const nodeTypes = {
 };
 
 const defaultEdgeOptions = {
-  type: 'smoothstep',
+  type: 'straight',
   animated: true,
   style: { stroke: '#94a3b8', strokeWidth: 1.5 },
 };
@@ -104,7 +104,7 @@ function FlowEditor({ fluxo, conexoes = [], onSalvar, onVoltar }) {
   }, [undo, redo]);
 
   const onConnect = useCallback((params) => {
-    setEdges((eds) => addEdge({ ...params, type: 'smoothstep', animated: true, style: { stroke: '#94a3b8', strokeWidth: 1.5 } }, eds));
+    setEdges((eds) => addEdge({ ...params, type: 'straight', animated: true, style: { stroke: '#94a3b8', strokeWidth: 1.5 } }, eds));
     setTimeout(saveHistory, 0);
   }, [setEdges, saveHistory]);
 
@@ -188,7 +188,7 @@ function FlowEditor({ fluxo, conexoes = [], onSalvar, onVoltar }) {
         sourceHandle: handleLivre,
         target: id,
         targetHandle,
-        type: 'smoothstep',
+        type: 'straight',
         animated: true,
         style: { stroke: '#94a3b8', strokeWidth: 1.5 },
       }];
