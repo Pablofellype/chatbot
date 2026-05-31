@@ -188,21 +188,6 @@ function App() {
           ))}
         </nav>
 
-        {/* --- IA COPILOT SUGGESTIONS PANEL --- */}
-        <div className="mx-4 mb-4 p-4 rounded-xl border bg-gradient-to-br from-[#FFF5F5] to-[#FEF2F2] border-[#F40009]/15 relative overflow-hidden group shadow-sm z-10 transition-all hover:border-[#F40009]/30">
-          <div className="absolute inset-0 bg-radial-gradient(circle, rgba(244, 0, 9, 0.04) 0%, transparent 80%) opacity-70" />
-          <div className="flex items-center gap-2 mb-2 relative z-10">
-            <span className="flex h-2 w-2 relative">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#F40009] opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#F40009]"></span>
-            </span>
-            <p className="text-[10px] font-extrabold text-[#F40009] tracking-widest uppercase">Coca-Cola AI Copilot</p>
-          </div>
-          <p className="text-[11.5px] text-[var(--text-secondary)] font-medium leading-relaxed relative z-10 min-h-[36px] transition-all duration-300">
-            {sugestoesIA[sugestaoIndex]}
-          </p>
-        </div>
-
         {/* Elegant glowing ribbon wave */}
         <div className="absolute bottom-16 left-0 w-full overflow-hidden pointer-events-none opacity-[0.06] select-none h-16 z-0">
           <svg className="absolute bottom-0 left-0 w-[120%] text-[#F40009]" viewBox="0 0 220 60" fill="currentColor">
@@ -212,8 +197,7 @@ function App() {
         </div>
 
         {/* Footer with Dark Mode Switch */}
-        <div className="px-6 py-4 border-t border-[var(--border-light)] flex items-center justify-between z-10 bg-transparent">
-          <p className="text-[10px] text-[var(--text-faint)] font-medium">Painel Admin v1.2</p>
+        <div className="px-6 py-4 border-t border-[var(--border-light)] flex items-center justify-end z-10 bg-transparent">
           <button
             onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
             className="w-7 h-7 rounded-lg bg-[var(--surface-sunken)] hover:bg-[var(--border)] flex items-center justify-center text-[var(--text-secondary)] cursor-pointer transition-all border border-[var(--border)] active:scale-95"
