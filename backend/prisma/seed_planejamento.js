@@ -7,7 +7,12 @@ const main = async () => {
   const conexaoId = conexao ? conexao.id : 1;
 
   const nome = "Planejamento Administrativo";
-  const gatilhos = "planejamento, administrativo, rotina, material, nps, limpeza";
+  
+  // --- Lista de Gatilhos Super Robusta ---
+  // Inclui saudações, termos administrativos, pedidos e suporte.
+  // Graças à inteligência do backend, variações de maiúsculas/minúsculas e acentos já são resolvidas automaticamente!
+  const gatilhos = "oi, ola, olá, bom dia, boa tarde, boa noite, tudo bem, opa, eai, ei, ajuda, menu, opcoes, opções, suporte, auxilio, iniciar, comecar, começar, atendimento, planejamento, administrativo, adm, planadm, rotina, rotinas, cronograma, material, materiais, dml, pedido, limpeza, limpar, qr, qrcode, nps, avaliacao, avaliação";
+  
   const msgForaHorario = "Estamos fora do horário de atendimento do Planejamento Administrativo.";
   
   // --- Nós com Posicionamento Horizontal Premium (Left-to-Right) ---
@@ -222,12 +227,12 @@ const main = async () => {
     { key: "adm", name: "Administrativo", file: "administrative.png", routine: "• 08:00 - Alinhamento diário e leitura de e-mails\\n• 10:00 - Faturamento e conciliação de contas\\n• 14:00 - Acompanhamento de KPIs do setor\\n• 17:00 - Fechamento de relatórios de produtividade" },
     { key: "ceilandia", name: "Ceilândia", file: "ceilandia.png", routine: "• 06:00 - Abertura do pátio de distribuição\\n• 08:00 - Liberação e roteirização da frota\\n• 12:00 - Conferência física de retornos de rota\\n• 16:00 - Fechamento do caixa diário da unidade" },
     { key: "fenix", name: "Fênix", file: "fenix.png", routine: "• 07:30 - DDS operacional (Diálogo Diário de Segurança)\\n• 09:00 - Roteirização de carregamento prioritário\\n• 13:00 - Autoria de qualidade de paletes\\n• 17:00 - Inventário rotativo de alta rotatividade" },
-    { key: "diretoria", name: "Diretoria", file: "diretoria.png", routine: "• 09:00 - Reunião executiva de resultados (BI)\\n• 11:00 - Análise de CAPEX e OPEX administrativo\\n• 14:30 - Alinhamento strategic com lideranças\\n• 16:30 - Assinatura e homologação de contratos" },
+    { key: "diretoria", name: "Diretoria", file: "diretoria.png", routine: "• 09:00 - Reunião executiva de resultados (BI)\\n• 11:00 - Análise de CAPEX e OPEX administrativo\\n• 14:30 - Alinhamento estratégico com lideranças\\n• 16:30 - Assinatura e homologação de contratos" },
     { key: "sia", name: "SIA", file: "sia.png", routine: "• 07:00 - Briefing operacional matinal\\n• 09:00 - Liberação de cargas expressas\\n• 13:30 - Monitoramento do fluxo de pátio e frota\\n• 16:00 - Fechamento de manifestos e notas fiscais" },
     { key: "conceito", name: "Loja Conceito", file: "loja conceito.png", routine: "• 09:00 - Abertura e checagem de vitrines e PDV\\n• 10:30 - Atendimento e vendas diretas\\n• 14:00 - Reposição de estoque de produtos refrigerados\\n• 18:00 - Fechamento do caixa e conciliação de cartões" },
     { key: "verdes", name: "Áreas Verdes", file: "areas verdes.png", routine: "• 07:00 - Distribuição de equipes nos jardins e plantas\\n• 08:30 - Poda, adubação e irrigação matinal\\n• 13:00 - Manutenção e limpeza de canteiros e gramados\\n• 15:30 - Vistoria de controle fitossanitário" },
     { key: "almoxarifado", name: "Almoxarifado", file: "almoxarifado.png", routine: "• 07:00 - Recebimento de insumos e matérias-primas\\n• 09:00 - Lançamento de notas fiscais no sistema ERP\\n• 13:30 - Separação de kits de requisição de setores\\n• 16:00 - Inventário rotativo e conferência física" },
-    { key: "externas", name: "Áreas Externas", file: "areas externas.png", routine: "• 07:00 - Varrição técnica e recolhimento de resíduos\\n• 09:00 - Monitoramento de acessos externos e vagas\\n• 13:30 - Conservação de fachadas e pátios de manobra\\n• 15:30 - Check-list de limpeza e conservação externa" },
+    { key: "externas", name: "Áreas Externas", file: "areas externas.png", routine: "• 07:00 - Varrição técnica e recolhimento de resíduos\\n• 09:00 - Monitoramento de acessos externos e vagas\\n• 13:30 - Conservação de fachadas and pátios de manobra\\n• 15:30 - Check-list de limpeza e conservação externa" },
     { key: "oficina", name: "Oficina", file: "oficina.png", routine: "• 07:00 - Reunião operacional e check-list de ferramentas\\n• 08:30 - Manutenção preventiva de empilhadeiras e frota\\n• 11:00 - Atendimentos corretivos de linha industrial\\n• 15:30 - Organização e limpeza de bancadas (5S)" },
     { key: "ccb", name: "CCB", file: "ccb.png", routine: "• 07:30 - Lançamento operacional do dia\\n• 09:00 - Acompanhamento técnico de conformidades\\n• 13:30 - Inspeção física de processos na área industrial\\n• 16:00 - Tabulação de dados e relatório consolidado" },
     { key: "estoque", name: "Estoque", file: "estoque.png", routine: "• 06:30 - Planejamento de ocupação e espaço no galpão\\n• 08:00 - Operação de estocagem de paletes prontos\\n• 12:00 - Alinhamento e conferência física de perdas\\n• 15:30 - Preparação física do estoque para turno da noite" }
@@ -291,7 +296,7 @@ const main = async () => {
     }
   });
 
-  console.log("Novo fluxo horizontal estilo n8n criado com sucesso! ID:", novoFluxo.id);
+  console.log("Novo fluxo horizontal robusto criado com sucesso! ID:", novoFluxo.id);
 };
 
 main()
