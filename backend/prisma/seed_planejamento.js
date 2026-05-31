@@ -117,7 +117,7 @@ const main = async () => {
 
   const edges = [
     {
-      type: "straight",
+      type: "default",
       animated: true,
       style: { stroke: "#94a3b8", strokeWidth: 1.5 },
       source: "start",
@@ -127,7 +127,7 @@ const main = async () => {
       id: "edge_start_to_principal"
     },
     {
-      type: "straight",
+      type: "default",
       animated: true,
       style: { stroke: "#94a3b8", strokeWidth: 1.5 },
       source: "menu_principal",
@@ -137,7 +137,7 @@ const main = async () => {
       id: "edge_principal_to_material"
     },
     {
-      type: "straight",
+      type: "default",
       animated: true,
       style: { stroke: "#94a3b8", strokeWidth: 1.5 },
       source: "menu_principal",
@@ -147,7 +147,7 @@ const main = async () => {
       id: "edge_principal_to_limpeza"
     },
     {
-      type: "straight",
+      type: "default",
       animated: true,
       style: { stroke: "#94a3b8", strokeWidth: 1.5 },
       source: "menu_principal",
@@ -159,7 +159,7 @@ const main = async () => {
     
     // --- Edges pós-informação que levam ao Menu Pós-Atendimento ---
     {
-      type: "straight",
+      type: "default",
       animated: true,
       style: { stroke: "#94a3b8", strokeWidth: 1.5 },
       source: "link_material",
@@ -169,7 +169,7 @@ const main = async () => {
       id: "edge_material_to_pos"
     },
     {
-      type: "straight",
+      type: "default",
       animated: true,
       style: { stroke: "#94a3b8", strokeWidth: 1.5 },
       source: "link_limpeza",
@@ -181,7 +181,7 @@ const main = async () => {
 
     // --- Edges do Menu de Pós-Atendimento ---
     {
-      type: "straight",
+      type: "default",
       animated: true,
       style: { stroke: "#F40009", strokeWidth: 1.8 }, // Destaque em Vermelho Coca-Cola para o Loop de Retorno!
       source: "menu_pos_atendimento",
@@ -191,7 +191,7 @@ const main = async () => {
       id: "edge_pos_voltar_to_principal"
     },
     {
-      type: "straight",
+      type: "default",
       animated: true,
       style: { stroke: "#94a3b8", strokeWidth: 1.5 },
       source: "menu_pos_atendimento",
@@ -202,10 +202,10 @@ const main = async () => {
     }
   ];
 
-  // Conecta todas as avaliações (0 a 10) ao nó de agradecimento final usando linhas retas
+  // Conecta todas as avaliações (0 a 10) ao nó de agradecimento final usando curvas suaves
   for (let idx = 0; idx <= 10; idx++) {
     edges.push({
-      type: "straight",
+      type: "default",
       animated: true,
       style: { stroke: "#10b981", strokeWidth: 1.5 }, // Verde para indicar finalização de sucesso
       source: "menu_avaliacao",
@@ -220,7 +220,7 @@ const main = async () => {
     { key: "industria", name: "Indústria", file: "industria.png", routine: "• 07:00 - Setup inicial e briefing de segurança\\n• 08:30 - Monitoramento de linhas de envase\\n• 11:30 - Parada programada para higienização\\n• 14:00 - Apuração de perdas e volume diário" },
     { key: "adm", name: "Administrativo", file: "administrative.png", routine: "• 08:00 - Alinhamento diário e leitura de e-mails\\n• 10:00 - Faturamento e conciliação de contas\\n• 14:00 - Acompanhamento de KPIs do setor\\n• 17:00 - Fechamento de relatórios de produtividade" },
     { key: "ceilandia", name: "Ceilândia", file: "ceilandia.png", routine: "• 06:00 - Abertura do pátio de distribuição\\n• 08:00 - Liberação e roteirização da frota\\n• 12:00 - Conferência física de retornos de rota\\n• 16:00 - Fechamento do caixa diário da unidade" },
-    { key: "fenix", name: "Fênix", file: "fenix.png", routine: "• 07:30 - DDS operacional (Diálogo Diário de Segurança)\\n• 09:00 - Roteirização de carregamento prioritário\\n• 13:00 - Auditoria de qualidade de paletes\\n• 17:00 - Inventário rotativo de alta rotatividade" },
+    { key: "fenix", name: "Fênix", file: "fenix.png", routine: "• 07:30 - DDS operacional (Diálogo Diário de Segurança)\\n• 09:00 - Roteirização de carregamento prioritário\\n• 13:00 - Autoria de qualidade de paletes\\n• 17:00 - Inventário rotativo de alta rotatividade" },
     { key: "diretoria", name: "Diretoria", file: "diretoria.png", routine: "• 09:00 - Reunião executiva de resultados (BI)\\n• 11:00 - Análise de CAPEX e OPEX administrativo\\n• 14:30 - Alinhamento estratégico com lideranças\\n• 16:30 - Assinatura e homologação de contratos" },
     { key: "sia", name: "SIA", file: "sia.png", routine: "• 07:00 - Briefing operacional matinal\\n• 09:00 - Liberação de cargas expressas\\n• 13:30 - Monitoramento do fluxo de pátio e frota\\n• 16:00 - Fechamento de manifestos e notas fiscais" },
     { key: "conceito", name: "Loja Conceito", file: "loja conceito.png", routine: "• 09:00 - Abertura e checagem de vitrines e PDV\\n• 10:30 - Atendimento e vendas diretas\\n• 14:00 - Reposição de estoque de produtos refrigerados\\n• 18:00 - Fechamento do caixa e conciliação de cartões" },
@@ -247,9 +247,9 @@ const main = async () => {
       }
     });
 
-    // Conecta a opção do menu de áreas à respectiva imagem usando linhas retas
+    // Conecta a opção do menu de áreas à respectiva imagem usando curvas suaves
     edges.push({
-      type: "straight",
+      type: "default",
       animated: true,
       style: { stroke: "#94a3b8", strokeWidth: 1.5 },
       source: "menu_areas",
@@ -259,9 +259,9 @@ const main = async () => {
       id: `edge_areas_to_${a.key}`
     });
 
-    // Conecta a saída da imagem de cada área diretamente ao Menu de Pós-Atendimento usando linhas retas
+    // Conecta a saída da imagem de cada área diretamente ao Menu de Pós-Atendimento usando curvas suaves
     edges.push({
-      type: "straight",
+      type: "default",
       animated: true,
       style: { stroke: "#94a3b8", strokeWidth: 1.5 },
       source: nodeId,
@@ -290,7 +290,7 @@ const main = async () => {
     }
   });
 
-  console.log("Novo fluxo com linhas retas criado com sucesso! ID:", novoFluxo.id);
+  console.log("Novo fluxo com curvas estilo n8n criado com sucesso! ID:", novoFluxo.id);
 };
 
 main()
