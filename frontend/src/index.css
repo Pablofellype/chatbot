@@ -318,27 +318,22 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 .badge-neutral { background: var(--surface-sunken); color: var(--text-muted); }
 .badge-brand { background: var(--brand-light); color: var(--brand); }
 
-/* ==================== NOISE TEXTURE ==================== */
-
-.bg-noise {
-  position: relative;
-}
-
-.bg-noise::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  opacity: 0.02;
-  pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-  background-size: 200px;
-  border-radius: inherit;
-}
-
-/* ==================== GLASS ==================== */
+/* ==================== GLASS & SIDEBAR ==================== */
 
 .glass {
   background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+}
+
+aside {
+  background: rgba(255, 255, 255, 0.75) !important;
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+}
+
+[data-theme="dark"] aside {
+  background: rgba(15, 23, 42, 0.7) !important;
   backdrop-filter: blur(16px) saturate(180%);
   -webkit-backdrop-filter: blur(16px) saturate(180%);
 }
@@ -375,6 +370,10 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
   background: var(--surface-sunken);
 }
 
+.sidebar-item:active {
+  transform: scale(0.96);
+}
+
 .sidebar-item-active {
   color: var(--brand);
   background: var(--brand-light);
@@ -393,14 +392,35 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
   border-radius: 0 3px 3px 0;
 }
 
-/* ==================== STAT CARD ==================== */
+/* ==================== CARD & STAT CARD ==================== */
 
-.stat-card {
+.card, .stat-card {
   background: var(--surface);
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-xl);
-  padding: 20px 24px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
   box-shadow: var(--shadow-xs);
+  transition: transform 200ms cubic-bezier(.22, .78, .24, 1),
+              box-shadow 200ms cubic-bezier(.22, .78, .24, 1),
+              border-color 200ms cubic-bezier(.22, .78, .24, 1),
+              background-color 250ms cubic-bezier(.22, .78, .24, 1);
+}
+
+.card:hover, .stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px -10px rgba(10, 15, 26, 0.08), 0 4px 12px -5px rgba(10, 15, 26, 0.03);
+  border-color: var(--border-hover);
+}
+
+[data-theme="dark"] .card:hover, [data-theme="dark"] .stat-card:hover {
+  box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.5), 0 4px 12px -5px rgba(0, 0, 0, 0.3);
+}
+
+.card-interactive {
+  cursor: pointer;
+}
+
+.card-interactive:active {
+  transform: translateY(0) scale(0.995);
 }
 
 .stat-value {
@@ -416,4 +436,8 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
   color: var(--text-muted);
   margin-top: 6px;
   font-weight: 500;
+}
+
+button:active, .btn:active {
+  transform: scale(0.96);
 }

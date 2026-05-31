@@ -298,11 +298,20 @@ function criarClient(conexaoId) {
     estado.status.connected = false;
   });
 
-  client.on('ready', () => {
+  client.on('ready', async () => {
     console.log(`[WHATSAPP #${conexaoId}] Bot conectado e pronto!`);
     estado.status.connected = true;
     estado.status.info = client.info;
     estado.qrCode = null;
+
+    try {
+      const wid = client.info.wid?._serialized || client.info.wid;
+      if (wid) {
+        estado.status.avatarUrl = await client.getProfilePicUrl(wid).catch(() => null);
+      }
+    } catch (e) {
+      estado.status.avatarUrl = null;
+    }
   });
 
   client.on('authenticated', () => {
@@ -408,13 +417,39 @@ function iniciarConexao(conexaoId) {
 function getStatusConexao(conexaoId) {
   const c = conexoes.get(conexaoId);
   if (!c) return { connected: false, qrGenerated: false, info: null, qrCode: null };
-  return { ...c.status, qrCode: c.qrCode };
+
+  const phoneInfo = c.client?.info?.phone || {};
+  const deviceInfo = {
+    manufacturer: phoneInfo.device_manufacturer || '',
+    model: phoneInfo.device_model || '',
+    os: phoneInfo.os_version || '',
+    waVersion: phoneInfo.wa_version || ''
+  };
+
+  return { 
+    ...c.status, 
+    qrCode: c.qrCode,
+    deviceInfo,
+    pushname: c.client?.info?.pushname || ''
+  };
 }
 
 function getStatusTodas() {
   const result = {};
   for (const [id, c] of conexoes) {
-    result[id] = { ...c.status, qrCode: c.qrCode };
+    const phoneInfo = c.client?.info?.phone || {};
+    const deviceInfo = {
+      manufacturer: phoneInfo.device_manufacturer || '',
+      model: phoneInfo.device_model || '',
+      os: phoneInfo.os_version || '',
+      waVersion: phoneInfo.wa_version || ''
+    };
+    result[id] = { 
+      ...c.status, 
+      qrCode: c.qrCode,
+      deviceInfo,
+      pushname: c.client?.info?.pushname || ''
+    };
   }
   return result;
 }
