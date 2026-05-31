@@ -15,7 +15,12 @@ export default function NumerosPage() {
   const [numeros, setNumeros] = useState([]);
   const [loading, setLoading] = useState(true);
   const [mostrarForm, setMostrarForm] = useState(false);
-  const [novoNumero, setNovoNumero] = useState('');
+  
+  // Estados para DDI, DDD e Telefone separados
+  const [novoDdi, setNovoDdi] = useState('55');
+  const [novoDdd, setNovoDdd] = useState('');
+  const [novoTel, setNovoTel] = useState('');
+  
   const [novoNome, setNovoNome] = useState('');
   const [novoLid, setNovoLid] = useState('');
   const [editando, setEditando] = useState(null);
@@ -33,10 +38,17 @@ export default function NumerosPage() {
 
   const handleAdicionar = async (e) => {
     e.preventDefault();
-    if (!novoNumero.trim()) return;
+    if (!novoDdd.trim() || !novoTel.trim()) {
+      alert('Por favor, preencha o DDD e o Número.');
+      return;
+    }
+    
+    // Combina DDI, DDD e o número de telefone local
+    const numeroCompleto = `${novoDdi}${novoDdd}${novoTel}`.replace(/\D/g, '');
+    
     try {
-      await numeroService.criar({ numero: novoNumero, nome: novoNome, lid: novoLid || undefined });
-      setNovoNumero(''); setNovoNome(''); setNovoLid('');
+      await numeroService.criar({ numero: numeroCompleto, nome: novoNome, lid: novoLid || undefined });
+      setNovoDdd(''); setNovoTel(''); setNovoNome(''); setNovoLid('');
       setMostrarForm(false);
       carregar();
     } catch (error) {
@@ -102,39 +114,79 @@ export default function NumerosPage() {
 
       {/* Form adicionar */}
       {mostrarForm && (
-        <form onSubmit={handleAdicionar} className="card p-5 mb-6">
-          <div className="grid grid-cols-3 gap-4 mb-4">
-            <div>
-              <label className="label">Numero *</label>
-              <input
-                value={novoNumero}
-                onChange={(e) => setNovoNumero(e.target.value)}
-                placeholder="+55 61 90000-0000"
-                className="input"
-              />
+        <form onSubmit={handleAdicionar} className="card p-6 mb-6 shadow-md border border-[var(--border)] animate-fadeIn">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            
+            {/* Linha do Telefone Agrupada */}
+            <div className="grid grid-cols-12 gap-2">
+              <div className="col-span-4">
+                <label className="label">País / DDI *</label>
+                <select
+                  value={novoDdi}
+                  onChange={(e) => setNovoDdi(e.target.value)}
+                  className="input !py-2.5"
+                >
+                  <option value="55">🇧🇷 BR (+55)</option>
+                  <option value="351">🇵🇹 PT (+351)</option>
+                  <option value="1">🇺🇸 US (+1)</option>
+                  <option value="244">🇦🇴 AO (+244)</option>
+                  <option value="258">🇲🇿 MZ (+258)</option>
+                  <option value="54">🇦🇷 AR (+54)</option>
+                  <option value="34">🇪🇸 ES (+34)</option>
+                  <option value="44">🇬🇧 GB (+44)</option>
+                  <option value="49">🇩🇪 DE (+49)</option>
+                  <option value="39">🇮🇹 IT (+39)</option>
+                  <option value="33">🇫🇷 FR (+33)</option>
+                </select>
+              </div>
+              
+              <div className="col-span-3">
+                <label className="label">DDD *</label>
+                <input
+                  value={novoDdd}
+                  onChange={(e) => setNovoDdd(e.target.value.replace(/\D/g, '').slice(0, 3))}
+                  placeholder="61"
+                  className="input !py-2.5 text-center"
+                />
+              </div>
+              
+              <div className="col-span-5">
+                <label className="label">Número *</label>
+                <input
+                  value={novoTel}
+                  onChange={(e) => setNovoTel(e.target.value.replace(/\D/g, ''))}
+                  placeholder="900000000"
+                  className="input !py-2.5"
+                />
+              </div>
             </div>
+
+            {/* Linha de Nome */}
             <div>
-              <label className="label">Nome</label>
+              <label className="label">Nome do Contato</label>
               <input
                 value={novoNome}
                 onChange={(e) => setNovoNome(e.target.value)}
-                placeholder="Joao (opcional)"
-                className="input"
+                placeholder="Ex: João (opcional)"
+                className="input !py-2.5"
               />
             </div>
-            <div>
-              <label className="label">LID (interno)</label>
-              <input
-                value={novoLid}
-                onChange={(e) => setNovoLid(e.target.value)}
-                placeholder="Preenchido automaticamente"
-                className="input"
-              />
-            </div>
+            
           </div>
-          <div className="flex gap-2 justify-end">
+          
+          <div className="mb-4">
+            <label className="label">LID (Identificador Interno do WhatsApp)</label>
+            <input
+              value={novoLid}
+              onChange={(e) => setNovoLid(e.target.value)}
+              placeholder="Preenchido automaticamente ou informe caso tenha"
+              className="input !py-2.5"
+            />
+          </div>
+
+          <div className="flex gap-2 justify-end pt-2 border-t border-[var(--border-light)]">
             <button type="button" onClick={() => setMostrarForm(false)} className="btn btn-ghost btn-sm">Cancelar</button>
-            <button type="submit" className="btn btn-primary btn-md">Adicionar</button>
+            <button type="submit" className="btn btn-primary btn-md">Adicionar Número</button>
           </div>
         </form>
       )}
