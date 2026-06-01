@@ -39,57 +39,74 @@ sudo apt install -y ffmpeg  # opcional
 
 ---
 
-## Instalacao (Passo a Passo)
+## 🚀 Instalação (Como Começar)
 
-### 1. Clonar o repositorio
+Para sua comodidade, criamos dois métodos de instalação. O **Método 1** é automatizado e prepara todo o sistema em segundos!
 
+---
+
+### ⚡ Método 1: Inicialização Automática (Recomendado / Super Rápido)
+
+Este método instala todas as dependências do Frontend e do Backend, configura o banco de dados SQLite e **semeia automaticamente os fluxos visuais prontos de exemplo** (como o Administrativo e de Planejamento) no seu painel!
+
+> [!IMPORTANT]  
+> Você **DEVE** rodar este comando na **pasta raiz (principal)** do projeto (onde fica este arquivo README.md), e **NUNCA** dentro da pasta `/backend` ou `/frontend`!
+
+1. Abra o seu terminal na **pasta principal (raiz)** do projeto.
+2. Execute o seguinte comando:
+   ```bash
+   npm run setup
+   ```
+3. **Pronto!** O script fará todo o trabalho pesado por você de forma automática. Agora pule direto para a seção [Rodando o Sistema](#rodando-o-sistema).
+
+---
+
+### 🛠️ Método 2: Instalação Manual (Passo a Passo)
+
+Caso prefira fazer a instalação de cada módulo manualmente, siga as etapas abaixo:
+
+#### 1. Clonar o repositório
 ```bash
 git clone https://github.com/SEU_USUARIO/chatbot.git
 cd chatbot
 ```
 
-### 2. Instalar dependencias do BACKEND
-
+#### 2. Instalar dependências do BACKEND e criar banco de dados
 ```bash
 cd backend
 npm install
-```
-
-### 3. Gerar o cliente Prisma e criar o banco de dados
-
-```bash
 npx prisma generate
 npx prisma migrate dev --name init
 ```
+*(Isso gerará a estrutura básica do banco SQLite em `prisma/dev.db`)*
 
-> Isso cria o arquivo `prisma/dev.db` (banco SQLite local). Nao precisa instalar nenhum banco externo.
-
-### 4. Criar o arquivo .env do backend
-
-Crie o arquivo `backend/.env` com:
-
-```
+#### 3. Criar arquivo de configuração do backend
+Crie o arquivo `backend/.env` e insira o seguinte conteúdo:
+```env
 DATABASE_URL="file:./dev.db"
 PORT=3001
 ```
 
-### 5. Criar pasta de uploads
-
+#### 4. Criar pasta de uploads
+No Linux/Mac:
 ```bash
 mkdir uploads
 ```
+*No Windows: Crie uma pasta vazia chamada `uploads` manualmente dentro do diretório `backend`.*
 
-> No Windows: crie a pasta `uploads` dentro de `backend` manualmente.
+#### 5. Opcional: Semear os fluxos visuais de exemplo no banco
+Ainda dentro da pasta `backend`, execute o comando:
+```bash
+npx prisma db seed
+```
 
-### 6. Instalar dependencias do FRONTEND
-
+#### 6. Instalar dependências do FRONTEND
 ```bash
 cd ../frontend
 npm install
 ```
 
-### 7. Voltar para a raiz
-
+#### 7. Voltar para a raiz do projeto
 ```bash
 cd ..
 ```
