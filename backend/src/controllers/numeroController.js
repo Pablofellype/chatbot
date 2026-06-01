@@ -41,12 +41,35 @@ const criar = async (req, res) => {
     // Remove formatação: +55 61 99258-1786 → 5561992581786
     const limpo = numero.replace(/[\s\-\+\(\)]/g, '');
 
+    // Verifica se já existe
+    const existente = await prisma.numeroAutorizado.findUnique({
+      where: { numero: limpo }
+    });
+
+    if (existente) {
+      // Se já existe, atualiza nome/lid se enviados e retorna
+      const atualizado = await prisma.numeroAutorizado.update({
+        where: { id: existente.id },
+        data: {
+          ...(nome && { nome }),
+          ...(lid && { lid }),
+        }
+      });
+      return res.status(200).json(atualizado);
+    }
+
     const n = await prisma.numeroAutorizado.create({
       data: { numero: limpo, nome: nome || null, lid: lid || null },
     });
     res.status(201).json(n);
   } catch (error) {
-    if (error.code === 'P2002') return res.status(400).json({ erro: 'Número já cadastrado' });
+    if (error.code === 'P2002') {
+      const existente = await prisma.numeroAutorizado.findUnique({
+        where: { numero: numero.replace(/[\s\-\+\(\)]/g, '') }
+      });
+      if (existente) return res.status(200).json(existente);
+      return res.status(400).json({ erro: 'Número já cadastrado' });
+    }
     res.status(500).json({ erro: 'Erro ao criar' });
   }
 };

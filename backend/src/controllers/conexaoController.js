@@ -6,6 +6,7 @@ const {
   logoutConexao,
   destruirConexao,
   listarContatos: listarContatosService,
+  obterFotoPerfil,
 } = require('../services/whatsappService');
 
 const listar = async (req, res) => {
@@ -145,4 +146,26 @@ const listarContatos = async (req, res) => {
   }
 };
 
-module.exports = { listar, criar, obterStatus, atualizar, deletar, logout, reconectar, verificarSenha, listarContatos };
+const obterFotoContato = async (req, res) => {
+  try {
+    const { numero } = req.query;
+    if (!numero) return res.status(400).json({ erro: 'Número obrigatório' });
+    const url = await obterFotoPerfil(numero);
+    res.json({ fotoUrl: url });
+  } catch (error) {
+    res.status(500).json({ erro: 'Erro ao obter foto do contato' });
+  }
+};
+
+module.exports = { 
+  listar, 
+  criar, 
+  obterStatus, 
+  atualizar, 
+  deletar, 
+  logout, 
+  reconectar, 
+  verificarSenha, 
+  listarContatos,
+  obterFotoContato
+};

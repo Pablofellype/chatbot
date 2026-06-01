@@ -4,12 +4,13 @@ Sistema completo de chatbot WhatsApp com painel administrativo, fluxos visuais, 
 
 ---
 
-## 📖 Glossário & Termos do Projeto
+## 📖 Glossário & Exemplos de Fluxos
 
-Para facilitar a compreensão do ecossistema técnico e dos termos de negócios do projeto, criamos guias explicativos detalhados:
+Para facilitar a compreensão do ecossistema técnico e ajudar no início rápido da criação de robôs, disponibilizamos os seguintes guias:
 
-- **[Glossário Interativo em HTML (Recomendado)](glossario.html)** — Abra o arquivo `glossario.html` no seu navegador para ter uma experiência rica, com pesquisa em tempo real, filtros por categoria, modo escuro/claro e visual moderno.
-- **[Glossário Estático (Markdown)](GLOSSARIO.md)** — Versão simplificada documentada diretamente no repositório.
+- **[Glossário Interativo em HTML (Recomendado)](glossario.html)** — Abra o `glossario.html` no seu navegador para ter uma experiência com busca instantânea, abas filtradas e design responsivo.
+- **[Glossário Técnico (Markdown)](GLOSSARIO.md)** — Explicação estática direta sobre conceitos e ferramentas.
+- **[Exemplos de Fluxos de Atendimento (Markdown)](EXEMPLOS_FLUXO.md)** — Roteiros visuais completos (com diagramas Mermaid e configurações recomendadas) para os setores **Administrativo** e de **Planejamento**.
 
 ---
 

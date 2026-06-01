@@ -11,5 +11,6 @@ router.post('/:id/logout', conexaoController.logout);
 router.post('/:id/reconectar', conexaoController.reconectar);
 router.post('/:id/verificar-senha', conexaoController.verificarSenha);
 router.get('/:id/contatos', conexaoController.listarContatos);
+router.get('/:id/foto-contato', conexaoController.obterFotoContato);
 
 module.exports = router;

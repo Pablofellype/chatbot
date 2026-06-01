@@ -43,6 +43,33 @@ export default function MensagensIndividuaisPage() {
   const [senhaErro, setSenhaErro] = useState('');
   const [contatosWhatsApp, setContatosWhatsApp] = useState([]);
   const [loadingContatos, setLoadingContatos] = useState(false);
+  const [digitarManualmente, setDigitarManualmente] = useState(false);
+  const [numeroManual, setNumeroManual] = useState('');
+  const [nomeManual, setNomeManual] = useState('');
+  const [buscaContato, setBuscaContato] = useState('');
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [fotosContatos, setFotosContatos] = useState({});
+
+  useEffect(() => {
+    if (contatosWhatsApp.length > 0 && selectedConexao) {
+      const fetchPhotos = async () => {
+        // Busca as fotos dos primeiros 50 contatos de forma assíncrona
+        const contatosParaBuscar = contatosWhatsApp.slice(0, 50);
+        for (const c of contatosParaBuscar) {
+          try {
+            if (fotosContatos[c.numero]) continue;
+            const res = await conexaoService.fotoContato(selectedConexao.id, c.numero);
+            if (res.data?.fotoUrl) {
+              setFotosContatos(prev => ({ ...prev, [c.numero]: res.data.fotoUrl }));
+            }
+          } catch (e) {
+            // ignore error
+          }
+        }
+      };
+      fetchPhotos();
+    }
+  }, [contatosWhatsApp, selectedConexao]);
 
   const carregar = async () => {
     try {
@@ -125,12 +152,33 @@ export default function MensagensIndividuaisPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.nome || !form.mensagem || !form.numeroId || !form.horario) return;
+    if (!form.nome || !form.mensagem || !form.horario) return;
+    if (!digitarManualmente && !form.numeroId) return;
 
     let targetNumeroId = form.numeroId;
 
-    // Se o numeroId começa com "wa-", cadastramos o número dinamicamente no banco antes
-    if (String(targetNumeroId).startsWith('wa-')) {
+    if (digitarManualmente) {
+      if (!numeroManual) {
+        alert('Por favor, informe o número de telefone.');
+        return;
+      }
+      try {
+        const { data: novoNum } = await numeroService.criar({ 
+          numero: numeroManual, 
+          nome: nomeManual || 'Contato Manual',
+        });
+        
+        // Associa o novo número à conexão correspondente no banco de dados
+        await numeroService.atualizar(novoNum.id, { conexaoId: selectedConexao.id });
+        
+        targetNumeroId = String(novoNum.id);
+        // Atualiza a lista localmente
+        await carregar();
+      } catch (err) {
+        alert(err.response?.data?.erro || 'Erro ao registrar número manual');
+        return;
+      }
+    } else if (String(targetNumeroId).startsWith('wa-')) {
       const payloadStr = targetNumeroId.replace('wa-', '');
       const [numero, nome] = payloadStr.split('|');
       try {
@@ -162,6 +210,7 @@ export default function MensagensIndividuaisPage() {
       if (editandoId) await mensagemIndividualService.atualizar(editandoId, dados);
       else await mensagemIndividualService.criar(dados);
       setForm(formVazio); setEditandoId(null); setMostrarForm(false);
+      setDigitarManualmente(false); setNumeroManual(''); setNomeManual(''); setBuscaContato('');
       carregar();
     } catch (error) { alert(error.response?.data?.erro || 'Erro'); }
   };
@@ -174,6 +223,7 @@ export default function MensagensIndividuaisPage() {
       numeroId: String(msg.numeroId), conexaoId: String(msg.conexaoId),
     });
     setEditandoId(msg.id);
+    setDigitarManualmente(false); setNumeroManual(''); setNomeManual('');
     setMostrarForm(true);
   };
 
@@ -191,7 +241,15 @@ export default function MensagensIndividuaisPage() {
     await mensagemIndividualService.atualizar(msg.id, { ativo: !msg.ativo }); carregar();
   };
 
-  const cancelar = () => { setForm(formVazio); setEditandoId(null); setMostrarForm(false); };
+  const cancelar = () => { 
+    setForm(formVazio); 
+    setEditandoId(null); 
+    setMostrarForm(false); 
+    setDigitarManualmente(false); 
+    setNumeroManual(''); 
+    setNomeManual('');
+    setBuscaContato('');
+  };
 
   if (loading) return <div className="text-center py-20 text-[var(--text-muted)]">Carregando...</div>;
 
@@ -242,27 +300,196 @@ export default function MensagensIndividuaisPage() {
             <div className="grid grid-cols-2 gap-4 mb-4">
               <div>
                 <label className="label">Para quem enviar {loadingContatos ? ' (carregando contatos...)' : ''} *</label>
-                <select value={form.numeroId} onChange={(e) => setForm({ ...form, numeroId: e.target.value })} className="input">
-                  <option value="">Selecione o contato...</option>
-                  
-                  {contatosWhatsApp.length > 0 && (
-                    <optgroup label="Contatos do seu WhatsApp (Celular)">
-                      {contatosWhatsApp.map(c => (
-                        <option key={c.id} value={`wa-${c.numero}|${c.nome}`}>
-                          👤 {c.nome} (+{c.numero})
-                        </option>
-                      ))}
-                    </optgroup>
-                  )}
-                  
-                  <optgroup label="Números Cadastrados no Painel">
-                    {numeros.map(n => (
-                      <option key={n.id} value={n.id}>
-                        📌 {n.nome ? `${n.nome} (${formatarNumero(n.numero)})` : formatarNumero(n.numero)}
-                      </option>
-                    ))}
-                  </optgroup>
-                </select>
+                
+                {digitarManualmente ? (
+                  <div className="space-y-2">
+                    <div className="flex gap-2">
+                      <input 
+                        value={numeroManual} 
+                        onChange={(e) => setNumeroManual(e.target.value)} 
+                        placeholder="Número (Ex: 5561999999999)" 
+                        className="input flex-1" 
+                        required
+                      />
+                      <button 
+                        type="button" 
+                        onClick={() => { setDigitarManualmente(false); setForm({ ...form, numeroId: '' }); }}
+                        className="btn border border-[var(--border)] hover:bg-[var(--surface-sunken)] py-2 px-3 text-xs"
+                      >
+                        Lista
+                      </button>
+                    </div>
+                    <input 
+                      value={nomeManual} 
+                      onChange={(e) => setNomeManual(e.target.value)} 
+                      placeholder="Nome do Contato (opcional)" 
+                      className="input w-full text-xs" 
+                    />
+                  </div>
+                ) : (
+                  <div className="relative">
+                    {/* Backdrop para fechar o dropdown ao clicar fora */}
+                    {dropdownOpen && (
+                      <div className="fixed inset-0 z-40" onClick={() => setDropdownOpen(false)} />
+                    )}
+                    
+                    {/* Botão Seletor Principal */}
+                    <div 
+                      onClick={() => setDropdownOpen(!dropdownOpen)} 
+                      className="input flex items-center justify-between cursor-pointer hover:border-[var(--brand)] transition-colors min-h-[46px] py-1 px-3 z-30 position-relative"
+                    >
+                      {form.numeroId ? (
+                        <div className="flex items-center gap-2">
+                          {(() => {
+                            const numId = form.numeroId;
+                            let url = null;
+                            let nome = '';
+                            let numStr = '';
+                            
+                            if (String(numId).startsWith('wa-')) {
+                              const [num, n] = numId.replace('wa-', '').split('|');
+                              url = fotosContatos[num];
+                              nome = n || 'WhatsApp';
+                              numStr = num;
+                            } else {
+                              const found = numeros.find(n => String(n.id) === String(numId));
+                              if (found) {
+                                url = found.fotoUrl;
+                                nome = found.nome || 'Painel';
+                                numStr = found.numero;
+                              }
+                            }
+                            
+                            return (
+                              <>
+                                {url ? (
+                                  <img src={url} alt={nome} className="w-8 h-8 rounded-full object-cover border border-[var(--border)] shrink-0" />
+                                ) : (
+                                  <div className="w-8 h-8 rounded-full bg-[var(--brand)] text-white flex items-center justify-center font-bold text-xs shrink-0">
+                                    {(nome || 'C').charAt(0).toUpperCase()}
+                                  </div>
+                                )}
+                                <div className="text-left">
+                                  <p className="text-xs font-semibold text-[var(--text-primary)] leading-tight">{nome}</p>
+                                  <p className="text-[10px] text-[var(--text-muted)] leading-tight">+{numStr}</p>
+                                </div>
+                              </>
+                            );
+                          })()}
+                        </div>
+                      ) : (
+                        <span className="text-sm text-[var(--text-muted)]">Selecione o contato...</span>
+                      )}
+                      <svg className={`w-4 h-4 text-[var(--text-muted)] transition-transform duration-200 ${dropdownOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                      </svg>
+                    </div>
+
+                    {/* Popover flutuante da lista */}
+                    {dropdownOpen && (
+                      <div className="absolute left-0 right-0 mt-1.5 bg-[var(--surface)] border border-[var(--border)] rounded-xl shadow-xl z-50 p-2 max-h-[300px] overflow-y-auto animate-fadeIn">
+                        {/* Campo de pesquisa dentro do dropdown */}
+                        <div className="mb-2 sticky top-0 bg-[var(--surface)] pt-1 pb-1">
+                          <input 
+                            type="text" 
+                            value={buscaContato} 
+                            onChange={(e) => setBuscaContato(e.target.value)} 
+                            placeholder="🔍 Digite para pesquisar..." 
+                            className="input text-xs py-1.5 px-3 h-auto w-full"
+                            onClick={(e) => e.stopPropagation()} // impede fechar o dropdown ao clicar
+                          />
+                        </div>
+
+                        {/* Opção Manual */}
+                        <div 
+                          onClick={() => {
+                            setDigitarManualmente(true);
+                            setForm({ ...form, numeroId: '' });
+                            setDropdownOpen(false);
+                          }}
+                          className="flex items-center gap-2 p-2 hover:bg-[var(--surface-sunken)] rounded-lg cursor-pointer text-xs text-[var(--brand)] font-semibold border-b border-[var(--border)] mb-1.5"
+                        >
+                          <div className="w-8 h-8 rounded-full bg-[var(--brand-light)] flex items-center justify-center text-[var(--brand)] shrink-0 font-bold">+</div>
+                          <span>➕ Digitar número manualmente...</span>
+                        </div>
+
+                        {/* Contatos do celular */}
+                        {contatosWhatsApp.length > 0 && (
+                          <div className="mb-2">
+                            <p className="text-[10px] uppercase font-bold tracking-wider text-[var(--text-muted)] px-2 mb-1">Contatos do Celular</p>
+                            {contatosWhatsApp
+                              .filter(c => 
+                                (c.nome || '').toLowerCase().includes(buscaContato.toLowerCase()) || 
+                                (c.numero || '').includes(buscaContato)
+                              )
+                              .map(c => {
+                                const url = fotosContatos[c.numero];
+                                return (
+                                  <div 
+                                    key={c.id} 
+                                    onClick={() => {
+                                      setForm({ ...form, numeroId: `wa-${c.numero}|${c.nome}` });
+                                      setDropdownOpen(false);
+                                    }}
+                                    className="flex items-center gap-2.5 p-2 hover:bg-[var(--surface-sunken)] rounded-lg cursor-pointer transition-colors"
+                                  >
+                                    {url ? (
+                                      <img src={url} alt={c.nome} className="w-8 h-8 rounded-full object-cover border border-[var(--border)] shrink-0" />
+                                    ) : (
+                                      <div className="w-8 h-8 rounded-full bg-[var(--brand)] text-white flex items-center justify-center font-bold text-xs shrink-0">
+                                        {(c.nome || 'W').charAt(0).toUpperCase()}
+                                      </div>
+                                    )}
+                                    <div className="text-left min-w-0">
+                                      <p className="text-xs font-semibold text-[var(--text-primary)] truncate leading-tight">{c.nome}</p>
+                                      <p className="text-[10px] text-[var(--text-muted)] leading-tight">+{c.numero}</p>
+                                    </div>
+                                  </div>
+                                );
+                              })
+                            }
+                          </div>
+                        )}
+
+                        {/* Números Cadastrados */}
+                        <div>
+                          <p className="text-[10px] uppercase font-bold tracking-wider text-[var(--text-muted)] px-2 mb-1">Painel Administrativo</p>
+                          {numeros
+                            .filter(n => !n.conexaoId || n.conexaoId === selectedConexao.id)
+                            .filter(n => 
+                              (n.nome || '').toLowerCase().includes(buscaContato.toLowerCase()) || 
+                              (n.numero || '').includes(buscaContato)
+                            )
+                            .map(n => {
+                              return (
+                                <div 
+                                  key={n.id} 
+                                  onClick={() => {
+                                    setForm({ ...form, numeroId: String(n.id) });
+                                    setDropdownOpen(false);
+                                  }}
+                                  className="flex items-center gap-2.5 p-2 hover:bg-[var(--surface-sunken)] rounded-lg cursor-pointer transition-colors"
+                                >
+                                  {n.fotoUrl ? (
+                                    <img src={n.fotoUrl} alt={n.nome || 'Painel'} className="w-8 h-8 rounded-full object-cover border border-[var(--border)] shrink-0" />
+                                  ) : (
+                                    <div className="w-8 h-8 rounded-full bg-[var(--brand)] text-white flex items-center justify-center font-bold text-xs shrink-0">
+                                      {(n.nome || '📌').charAt(0).toUpperCase()}
+                                    </div>
+                                  )}
+                                  <div className="text-left min-w-0">
+                                    <p className="text-xs font-semibold text-[var(--text-primary)] truncate leading-tight">{n.nome || 'Contato Painel'}</p>
+                                    <p className="text-[10px] text-[var(--text-muted)] leading-tight">+{n.numero}</p>
+                                  </div>
+                                </div>
+                              );
+                            })
+                          }
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
               <div>
                 <label className="label">Nome do agendamento *</label>

@@ -30,6 +30,7 @@ export const conexaoService = {
   reconectar: (id) => api.post(`/conexoes/${id}/reconectar`),
   verificarSenha: (id, senha) => api.post(`/conexoes/${id}/verificar-senha`, { senha }),
   contatos: (id) => api.get(`/conexoes/${id}/contatos`),
+  fotoContato: (id, numero) => api.get(`/conexoes/${id}/foto-contato?numero=${numero}`),
 };
 
 export const mensagemAutoService = {
