@@ -306,7 +306,15 @@ function criarClient(conexaoId) {
     puppeteer: {
       headless: true,
       protocolTimeout: 120000,
-      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu', '--disable-dev-shm-usage'],
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-gpu',
+        '--disable-dev-shm-usage',
+        '--disable-features=IsolateOrigins,site-per-process',
+        '--disable-site-isolation-trials',
+        '--js-flags="--max-old-space-size=512"'
+      ],
     },
   });
 
