@@ -1,0 +1,1424 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glossário & Guia de Termos — Chatbot WhatsApp</title>
+    <meta name="description" content="Um glossário completo e interativo explicando os termos técnicos, arquitetura e infraestrutura do sistema de Chatbot WhatsApp com editor de fluxos.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons (CDN) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* CSS Variables for Premium Theming */
+        :root {
+            --bg-primary: #0b0f19;
+            --bg-secondary: #161f30;
+            --bg-card: rgba(22, 31, 48, 0.7);
+            --bg-card-hover: rgba(26, 38, 59, 0.9);
+            --text-primary: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --accent-primary: #06b6d4; /* Cyan */
+            --accent-secondary: #8b5cf6; /* Purple */
+            --accent-gradient: linear-gradient(135deg, #06b6d4 0%, #8b5cf6 100%);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --border-color-hover: rgba(6, 182, 212, 0.4);
+            --shadow-primary: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+            --shadow-glow: 0 0 20px rgba(6, 182, 212, 0.15);
+            --font-main: 'Plus Jakarta Sans', sans-serif;
+            --font-title: 'Outfit', sans-serif;
+            --card-radius: 16px;
+            --transition-speed: 0.3s;
+        }
+
+        [data-theme="light"] {
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --bg-card: rgba(255, 255, 255, 0.8);
+            --bg-card-hover: rgba(255, 255, 255, 0.95);
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --accent-primary: #0891b2;
+            --accent-secondary: #7c3aed;
+            --accent-gradient: linear-gradient(135deg, #0891b2 0%, #7c3aed 100%);
+            --border-color: rgba(0, 0, 0, 0.08);
+            --border-color-hover: rgba(8, 145, 178, 0.4);
+            --shadow-primary: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
+            --shadow-glow: 0 0 20px rgba(8, 145, 178, 0.1);
+        }
+
+        /* Smooth Scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Basic Resets */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: var(--font-main);
+            line-height: 1.6;
+            overflow-x: hidden;
+            transition: background-color var(--transition-speed), color var(--transition-speed);
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--bg-secondary);
+            border-radius: 4px;
+            border: 2px solid var(--bg-primary);
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-primary);
+        }
+
+        /* Container Layout */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* Dynamic Background Orbs */
+        .bg-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(120px);
+            z-index: -1;
+            opacity: 0.15;
+            transition: opacity var(--transition-speed);
+        }
+        .orb-1 {
+            top: -100px;
+            right: -100px;
+            width: 500px;
+            height: 500px;
+            background: var(--accent-primary);
+        }
+        .orb-2 {
+            top: 600px;
+            left: -150px;
+            width: 600px;
+            height: 600px;
+            background: var(--accent-secondary);
+        }
+
+        /* Header Navigation */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(11, 15, 25, 0.8);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border-color);
+            transition: background var(--transition-speed), border var(--transition-speed);
+        }
+        [data-theme="light"] header {
+            background: rgba(248, 250, 252, 0.8);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 80px;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+
+        .logo-icon {
+            width: 42px;
+            height: 42px;
+            background: var(--accent-gradient);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            box-shadow: var(--shadow-glow);
+        }
+
+        .logo-text h1 {
+            font-family: var(--font-title);
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+        .logo-text span {
+            font-size: 11px;
+            color: var(--accent-primary);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 600;
+            display: block;
+            margin-top: -3px;
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .theme-toggle, .btn-action {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .theme-toggle:hover, .btn-action:hover {
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .btn-link {
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0 16px;
+            width: auto;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 80px 0 40px;
+            text-align: center;
+            position: relative;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            background: rgba(6, 182, 212, 0.1);
+            border: 1px solid rgba(6, 182, 212, 0.2);
+            color: var(--accent-primary);
+            border-radius: 100px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 24px;
+            animation: pulse 3s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(0.98); }
+        }
+
+        .hero h2 {
+            font-family: var(--font-title);
+            font-size: 48px;
+            font-weight: 800;
+            line-height: 1.15;
+            margin-bottom: 16px;
+            letter-spacing: -1.5px;
+            background: linear-gradient(to right, var(--text-primary) 30%, var(--accent-primary) 70%, var(--accent-secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            max-width: 650px;
+            margin: 0 auto;
+            color: var(--text-secondary);
+            font-size: 18px;
+        }
+
+        /* Interactive Map Section (Architecture visualization) */
+        .architecture-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 32px;
+            margin: 30px 0 60px;
+            box-shadow: var(--shadow-primary);
+            position: relative;
+            overflow: hidden;
+        }
+        .architecture-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--accent-gradient);
+        }
+        .architecture-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .architecture-header h3 {
+            font-family: var(--font-title);
+            font-size: 22px;
+            font-weight: 700;
+        }
+        .architecture-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            position: relative;
+        }
+        .arch-node {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            transition: all var(--transition-speed);
+            cursor: pointer;
+        }
+        .arch-node:hover {
+            border-color: var(--accent-primary);
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-glow);
+        }
+        .arch-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.03);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 12px;
+            color: var(--accent-primary);
+            transition: all var(--transition-speed);
+        }
+        .arch-node:hover .arch-icon {
+            background: var(--accent-gradient);
+            color: white;
+        }
+        .arch-node h4 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+        .arch-node p {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* Search and Filter Area */
+        .controls-area {
+            position: sticky;
+            top: 80px;
+            z-index: 90;
+            background: rgba(11, 15, 25, 0.9);
+            backdrop-filter: blur(16px);
+            padding: 20px 0;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 40px;
+            transition: background var(--transition-speed), border var(--transition-speed);
+        }
+        [data-theme="light"] .controls-area {
+            background: rgba(248, 250, 252, 0.9);
+        }
+
+        .search-wrapper {
+            position: relative;
+            max-width: 600px;
+            margin: 0 auto 20px;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            pointer-events: none;
+            width: 20px;
+            height: 20px;
+            transition: color var(--transition-speed);
+        }
+
+        .search-input {
+            width: 100%;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 16px 16px 16px 52px;
+            border-radius: 14px;
+            font-family: var(--font-main);
+            font-size: 16px;
+            outline: none;
+            transition: all var(--transition-speed);
+            box-shadow: var(--shadow-primary);
+        }
+
+        .search-input:focus {
+            border-color: var(--accent-primary);
+            box-shadow: var(--shadow-glow), var(--shadow-primary);
+        }
+        .search-input:focus + .search-icon {
+            color: var(--accent-primary);
+        }
+
+        .search-clear {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 4px;
+            border-radius: 50%;
+        }
+        .search-clear:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+        }
+
+        /* Filter Tabs */
+        .filter-tabs {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .tab-btn {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 10px 20px;
+            border-radius: 100px;
+            cursor: pointer;
+            font-family: var(--font-main);
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all var(--transition-speed);
+        }
+
+        .tab-btn:hover {
+            color: var(--text-primary);
+            border-color: var(--text-secondary);
+        }
+
+        .tab-btn.active {
+            background: var(--accent-gradient);
+            color: white !important;
+            border-color: transparent !important;
+            box-shadow: var(--shadow-glow);
+        }
+
+        .term-count {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 2px 8px;
+            border-radius: 100px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        /* Grid System for Terms */
+        .terms-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 24px;
+            padding-bottom: 80px;
+        }
+
+        .term-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border-color);
+            border-radius: var(--card-radius);
+            padding: 28px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            box-shadow: var(--shadow-primary);
+            transition: all var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+        }
+
+        .term-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(6, 182, 212, 0.03) 0%, rgba(139, 92, 246, 0.03) 100%);
+            opacity: 0;
+            transition: opacity var(--transition-speed);
+            z-index: -1;
+        }
+
+        .term-card:hover {
+            transform: translateY(-6px);
+            border-color: var(--border-color-hover);
+            box-shadow: var(--shadow-glow), var(--shadow-primary);
+        }
+
+        .term-card:hover::after {
+            opacity: 1;
+        }
+
+        .term-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+
+        .term-category {
+            font-size: 11px;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 1px;
+            padding: 4px 10px;
+            border-radius: 100px;
+            background: rgba(255,255,255,0.05);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+        }
+
+        /* Categories color badge modifiers */
+        .cat-geral {
+            color: #eab308; /* Yellow */
+            background: rgba(234, 179, 8, 0.08);
+            border-color: rgba(234, 179, 8, 0.15);
+        }
+        .cat-backend {
+            color: #3b82f6; /* Blue */
+            background: rgba(59, 130, 246, 0.08);
+            border-color: rgba(59, 130, 246, 0.15);
+        }
+        .cat-frontend {
+            color: #ec4899; /* Pink */
+            background: rgba(236, 72, 153, 0.08);
+            border-color: rgba(236, 72, 153, 0.15);
+        }
+        .cat-infra {
+            color: #10b981; /* Green */
+            background: rgba(16, 185, 129, 0.08);
+            border-color: rgba(16, 185, 129, 0.15);
+        }
+
+        .term-title {
+            font-family: var(--font-title);
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1.3;
+            margin-bottom: 12px;
+        }
+
+        .term-desc {
+            color: var(--text-secondary);
+            font-size: 14.5px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            flex-grow: 1;
+        }
+
+        .term-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid var(--border-color);
+            padding-top: 16px;
+            margin-top: auto;
+        }
+
+        .term-action-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            transition: color var(--transition-speed);
+        }
+
+        .term-action-btn:hover {
+            color: var(--accent-primary);
+        }
+
+        /* Empty State */
+        .empty-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 80px 20px;
+            background: var(--bg-card);
+            border: 1px dashed var(--border-color);
+            border-radius: var(--card-radius);
+            display: none;
+        }
+        .empty-state i {
+            width: 48px;
+            height: 48px;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+        .empty-state h3 {
+            font-family: var(--font-title);
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .empty-state p {
+            color: var(--text-secondary);
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        /* Interactive Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity var(--transition-speed);
+            padding: 24px;
+        }
+        .modal-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .modal {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            max-width: 600px;
+            width: 100%;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+            transform: scale(0.95);
+            transition: transform var(--transition-speed) cubic-bezier(0.34, 1.56, 0.64, 1);
+            overflow: hidden;
+        }
+        .modal-overlay.open .modal {
+            transform: scale(1);
+        }
+        .modal-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255,255,255,0.01);
+        }
+        .modal-header h3 {
+            font-family: var(--font-title);
+            font-size: 24px;
+            font-weight: 800;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-speed);
+        }
+        .modal-close:hover {
+            background: rgba(255,255,255,0.05);
+            color: var(--text-primary);
+        }
+        .modal-body {
+            padding: 24px;
+        }
+        .modal-meta {
+            display: inline-flex;
+            margin-bottom: 16px;
+        }
+        .modal-desc {
+            font-size: 16px;
+            line-height: 1.7;
+            color: var(--text-primary);
+            margin-bottom: 24px;
+        }
+        .modal-extra {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+        }
+        .modal-extra h4 {
+            font-family: var(--font-title);
+            font-size: 15px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--accent-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .modal-extra p {
+            font-size: 13.5px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* Toast Notifications */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--accent-primary);
+            border-left: 5px solid var(--accent-primary);
+            color: var(--text-primary);
+            padding: 16px 24px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 10000;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+            padding: 60px 0;
+            margin-top: 80px;
+            text-align: center;
+            position: relative;
+        }
+        footer p {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+        footer a {
+            color: var(--accent-primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .hero h2 {
+                font-size: 34px;
+            }
+            .hero p {
+                font-size: 15px;
+            }
+            .terms-grid {
+                grid-template-columns: 1fr;
+            }
+            .controls-area {
+                top: 80px;
+                padding: 12px 0;
+            }
+            .search-input {
+                padding: 12px 12px 12px 48px;
+                font-size: 14px;
+            }
+            .search-icon {
+                left: 14px;
+            }
+            .tab-btn {
+                padding: 8px 16px;
+                font-size: 12px;
+            }
+            .architecture-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Print Styles */
+        @media print {
+            body {
+                background: white !important;
+                color: black !important;
+            }
+            header, .controls-area, .bg-orb, .nav-actions, .term-action-btn, .modal-overlay, .toast {
+                display: none !important;
+            }
+            .terms-grid {
+                display: block !important;
+            }
+            .term-card {
+                page-break-inside: avoid;
+                border: 1px solid #ccc !important;
+                background: white !important;
+                color: black !important;
+                margin-bottom: 20px !important;
+                box-shadow: none !important;
+            }
+            .term-title {
+                color: black !important;
+            }
+            .term-desc {
+                color: #333 !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Decorative Background Orbs -->
+    <div class="bg-orb orb-1"></div>
+    <div class="bg-orb orb-2"></div>
+
+    <!-- Header Navigation -->
+    <header>
+        <div class="container header-content">
+            <a href="#" class="logo-area">
+                <div class="logo-icon">
+                    <i data-lucide="message-square"></i>
+                </div>
+                <div class="logo-text">
+                    <h1>Chatbot WhatsApp</h1>
+                    <span>Guia de Termos</span>
+                </div>
+            </a>
+            <div class="nav-actions">
+                <button class="theme-toggle" id="themeBtn" aria-label="Alternar tema">
+                    <i data-lucide="sun" id="themeIcon"></i>
+                </button>
+                <button class="btn-action" id="printBtn" aria-label="Imprimir">
+                    <i data-lucide="printer"></i>
+                </button>
+                <a href="README.md" class="btn-action btn-link" target="_blank" aria-label="Ver Código do Projeto">
+                    <i data-lucide="github"></i>
+                    <span>Ver Código</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="container">
+
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-badge">
+                <i data-lucide="sparkles"></i>
+                <span>Glossário Oficial Interativo</span>
+            </div>
+            <h2>O Coração do Nosso Sistema</h2>
+            <p>Descubra e domine os termos técnicos, ferramentas e componentes operacionais que compõem o nosso ecossistema de autoatendimento WhatsApp.</p>
+        </section>
+
+        <!-- Dynamic Architecture Map -->
+        <section class="architecture-card">
+            <div class="architecture-header">
+                <div class="logo-icon" style="width: 32px; height: 32px; border-radius: 8px;">
+                    <i data-lucide="cpu" style="width: 18px; height: 18px;"></i>
+                </div>
+                <h3>Visão de Arquitetura da Solução</h3>
+            </div>
+            <div class="architecture-grid">
+                <div class="arch-node" data-term="Conexões">
+                    <div class="arch-icon"><i data-lucide="smartphone"></i></div>
+                    <h4>WhatsApp</h4>
+                    <p>Celular escaneia o QR Code no painel e conecta o app.</p>
+                </div>
+                <div class="arch-node" data-term="React">
+                    <div class="arch-icon"><i data-lucide="layout"></i></div>
+                    <h4>Vite & React (Front)</h4>
+                    <p>Painel administrativo e editor de fluxos visuais do usuário.</p>
+                </div>
+                <div class="arch-node" data-term="Node.js">
+                    <div class="arch-icon"><i data-lucide="server"></i></div>
+                    <h4>Express API (Back)</h4>
+                    <p>Cérebro do sistema. Gerencia conexões e mensagens.</p>
+                </div>
+                <div class="arch-node" data-term="SQLite">
+                    <div class="arch-icon"><i data-lucide="database"></i></div>
+                    <h4>SQLite (Prisma)</h4>
+                    <p>Banco embutido local. Salva fluxos, conexões e logs.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sticky Controls Area (Search & Tabs) -->
+        <section class="controls-area">
+            <div class="search-wrapper">
+                <input type="text" class="search-input" id="searchInput" placeholder="Pesquisar termo ou funcionalidade...">
+                <i data-lucide="search" class="search-icon"></i>
+                <button class="search-clear" id="searchClearBtn"><i data-lucide="x"></i></button>
+            </div>
+            <div class="filter-tabs" id="filterTabs">
+                <button class="tab-btn active" data-category="all">
+                    <span>Todos</span>
+                    <span class="term-count" id="count-all">0</span>
+                </button>
+                <button class="tab-btn" data-category="geral">
+                    <span>Geral e Negócios</span>
+                    <span class="term-count" id="count-geral">0</span>
+                </button>
+                <button class="tab-btn" data-category="backend">
+                    <span>Backend e Banco</span>
+                    <span class="term-count" id="count-backend">0</span>
+                </button>
+                <button class="tab-btn" data-category="frontend">
+                    <span>Frontend & UI</span>
+                    <span class="term-count" id="count-frontend">0</span>
+                </button>
+                <button class="tab-btn" data-category="infra">
+                    <span>Deploy & VPS</span>
+                    <span class="term-count" id="count-infra">0</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Terms Grid Section -->
+        <section class="terms-grid" id="termsGrid">
+            <!-- Dynamic Terms will be injected here by Javascript -->
+
+            <!-- Empty State element -->
+            <div class="empty-state" id="emptyState">
+                <i data-lucide="frown"></i>
+                <h3>Nenhum termo encontrado</h3>
+                <p>Tente ajustar sua pesquisa ou utilize os botões de filtro para encontrar o que procura.</p>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Interactive Modal -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="modalTitle">Nome do Termo</h3>
+                <button class="modal-close" id="modalClose"><i data-lucide="x"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-meta">
+                    <span class="term-category" id="modalCategory">Categoria</span>
+                </div>
+                <p class="modal-desc" id="modalDesc">Descrição longa do termo e detalhes de funcionamento.</p>
+                <div class="modal-extra" id="modalExtraWrapper">
+                    <h4 id="modalExtraTitle"><i data-lucide="info"></i> Importância no Sistema</h4>
+                    <p id="modalExtraText">Mais informações úteis...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">
+        <i data-lucide="check-circle" style="color: var(--accent-primary);"></i>
+        <span id="toastMessage">Texto copiado com sucesso!</span>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p>© 2026 Sistema Chatbot WhatsApp. Todos os direitos reservados.</p>
+            <p>Criado de forma premium com amor por <a href="https://github.com/Pablofellype" target="_blank">Pablo Fellype</a></p>
+        </div>
+    </footer>
+
+    <!-- Javascript Logical Layer -->
+    <script>
+        // Database of Terms (Dynamic Content)
+        const termsData = [
+            {
+                title: "Chatbot",
+                category: "geral",
+                categoryLabel: "Geral e Negócios",
+                shortDesc: "Robô inteligente projetado para automatizar conversas e roteiros de atendimento.",
+                longDesc: "Um software projetado para simular conversas humanas via texto ou voz. No contexto deste projeto, o chatbot integra-se ao WhatsApp para responder automaticamente a clientes baseando-se nos fluxos de conversa pré-programados visualmente no painel administrativo.",
+                importance: "Reduz o tempo de resposta do cliente para zero, lidando com dúvidas frequentes (FAQ), triando solicitações e funcionando de forma ininterrupta (24 horas por dia, 7 dias por semana)."
+            },
+            {
+                title: "Conexões",
+                category: "geral",
+                categoryLabel: "Geral e Negócios",
+                shortDesc: "Números de WhatsApp conectados ao bot para atender diferentes setores ou ramais.",
+                longDesc: "Configurações de números de WhatsApp integrados ao sistema. A arquitetura multiconexão permite cadastrar e gerenciar múltiplos números de WhatsApp simultaneamente (ex: um número para o 'Suporte Financeiro', outro para 'Vendas'), cada um com seus próprios fluxos de conversa.",
+                importance: "Permite escalar a operação da empresa, descentralizando canais de atendimento e direcionando clientes para os respectivos setores corretos de forma transparente."
+            },
+            {
+                title: "Fluxos (Flows)",
+                category: "geral",
+                categoryLabel: "Geral e Negócios",
+                shortDesc: "Roteiros visuais de conversas que guiam o autoatendimento e automatizam respostas.",
+                longDesc: "A estrutura lógica e sequencial que determina o comportamento do robô. É o roteiro de atendimento visualmente desenhado contendo caixas de mensagens de texto, caminhos de decisão (se digitar 1, vai para o Passo X; se digitar 2, vai para o Passo Y), uploads de imagens ou áudios e opções de transferência para atendentes humanos.",
+                importance: "É onde a inteligência do negócio é inserida. Com os fluxos visuais, qualquer pessoa, mesmo sem conhecimento em programação, consegue montar uma árvore de atendimento interativa."
+            },
+            {
+                title: "QR Code de Autenticação",
+                category: "geral",
+                categoryLabel: "Geral e Negócios",
+                shortDesc: "Código gerado para escanear com o celular e conectar a sessão do WhatsApp Web.",
+                longDesc: "O código bidimensional dinâmico exibido no painel de Conexões do sistema. Assim como no WhatsApp Web oficial, o administrador precisa escanear este código usando o celular conectado no aplicativo do WhatsApp (Dispositivos Conectados) para autorizar e iniciar a sessão do bot de forma local ou remota.",
+                importance: "Indispensável para que o bot possa agir em nome do seu número. A autenticação é segura e salva os tokens localmente, de forma que o robô reconectará automaticamente no futuro."
+            },
+            {
+                title: "Números Autorizados",
+                category: "geral",
+                categoryLabel: "Geral e Negócios",
+                shortDesc: "Configuração que restringe a interação do robô apenas a telefones específicos.",
+                longDesc: "Configuração de segurança no painel que permite definir uma lista fechada de números de telefone externos que estão autorizados a disparar e interagir com o robô. Caso um número desconhecido mande mensagem, o bot simplesmente o ignora.",
+                importance: "Excelente para a fase de testes e homologação antes de lançar o robô oficialmente para o público final, garantindo que o bot não interfira com clientes reais."
+            },
+            {
+                title: "Node.js",
+                category: "backend",
+                categoryLabel: "Backend e Banco",
+                shortDesc: "O ambiente de execução Javascript de alta performance que roda o backend do sistema.",
+                longDesc: "Ambiente de execução JavaScript assíncrono orientado a eventos, projetado para construir aplicações de rede rápidas e escaláveis no lado do servidor. É a fundação do nosso backend, responsável por processar requisições da API e interagir com os serviços de chat.",
+                importance: "Permite usar a linguagem JavaScript de ponta a ponta no sistema (tanto na interface visual quanto no servidor), acelerando o desenvolvimento e aproveitando processos extremamente velozes baseados na engine V8 do Google."
+            },
+            {
+                title: "Express",
+                category: "backend",
+                categoryLabel: "Backend e Banco",
+                shortDesc: "Micro-framework Node.js para criação rápida de APIs e controle de rotas.",
+                longDesc: "Um micro-framework minimalista e flexível para Node.js que fornece um conjunto robusto de recursos para construir APIs da web. Ele lida com rotas HTTP, controladores, gerenciamento de erros e integrações (middlewares) com facilidade.",
+                importance: "É a porta de entrada da comunicação do painel frontend com o servidor backend, determinando o que acontece quando você clica em botões para criar fluxos, salvar conexões ou disparar mensagens."
+            },
+            {
+                title: "whatsapp-web.js",
+                category: "backend",
+                categoryLabel: "Backend e Banco",
+                shortDesc: "Biblioteca JavaScript que controla o WhatsApp simulando o WhatsApp Web.",
+                longDesc: "Uma biblioteca poderosa do ecossistema Node.js que conecta à API interna-oculta do WhatsApp Web através de uma instância em segundo plano do navegador Chromium (usando Puppeteer). Ela gerencia eventos e envia mídias de forma automatizada.",
+                importance: "É a peça técnica mais importante do chatbot, pois realiza a automação real de ler e enviar as mensagens de texto, mídias e arquivos sem precisar de uma licença oficial corporativa (API Cloud), que costuma ter altos custos por mensagem."
+            },
+            {
+                title: "Prisma ORM",
+                category: "backend",
+                categoryLabel: "Backend e Banco",
+                shortDesc: "Ferramenta moderna de tradução entre o código em JavaScript e o banco de dados.",
+                longDesc: "O Mapeador Objeto-Relacional (ORM) de última geração para Node.js. O Prisma atua como um tradutor automatizado entre o código em Javascript/TypeScript e a base de dados SQL. Ele garante tipagem estática e consultas extremamente limpas e eficientes.",
+                importance: "Evita a necessidade de escrever queries manuais em SQL puro, reduzindo drasticamente a quantidade de erros de digitação e facilitando a manutenção e a migração de banco de dados."
+            },
+            {
+                title: "SQLite",
+                category: "backend",
+                categoryLabel: "Backend e Banco",
+                shortDesc: "Banco de dados local leve embutido no projeto que armazena tudo em um arquivo.",
+                longDesc: "Um motor de banco de dados SQL leve, autônomo, de configuração zero e embutido. Ele salva todas as tabelas e registros em um único arquivo de computador na pasta local (`dev.db`), não exigindo a instalação ou configuração de servidores dedicados.",
+                importance: "Traz imensa simplicidade técnica. O projeto roda imediatamente após o download sem precisar que o programador instale servidores pesados (como MySQL ou PostgreSQL) no computador pessoal."
+            },
+            {
+                title: "Agendador (Scheduler)",
+                category: "backend",
+                categoryLabel: "Backend e Banco",
+                shortDesc: "Mecanismo que agenda e dispara mensagens em horários futuros programados.",
+                longDesc: "Mecanismo lógico e temporizador rodando em segundo plano no servidor backend. Ele consulta periodicamente a tabela de agendamentos no banco de dados SQLite para checar se alguma mensagem chegou no horário programado e a dispara imediatamente para o WhatsApp do cliente.",
+                importance: "Crucial para campanhas de lembretes, acompanhamento pós-venda (follow-ups) automático e envio de notificações importantes sem a necessidade de intervenção humana na data de envio."
+            },
+            {
+                title: "React",
+                category: "frontend",
+                categoryLabel: "Frontend & UI",
+                shortDesc: "Biblioteca JavaScript líder para criar interfaces web reativas em componentes.",
+                longDesc: "Biblioteca Javascript criada pela Meta (Facebook) para construir interfaces de usuário modernas baseadas em componentes independentes. Quando algum dado muda (por exemplo, status do robô mudou para 'Conectado'), o React atualiza o elemento na tela instantaneamente, sem recarregar a página.",
+                importance: "Permite criar o painel altamente dinâmico e veloz com a experiência suave de um aplicativo desktop."
+            },
+            {
+                title: "Vite",
+                category: "frontend",
+                categoryLabel: "Frontend & UI",
+                shortDesc: "Ferramenta de build moderna e ultrarrápida para projetos frontend modernos.",
+                longDesc: "Ferramenta de empacotamento (bundler) e build frontend de altíssima performance. O Vite utiliza módulos nativos de navegadores (ESM) para oferecer recargas instantâneas em tempo de desenvolvimento (Hot Module Replacement) e gera builds extremamente compactados para produção.",
+                importance: "Substitui o antigo Create React App (Webpack), reduzindo o tempo de inicialização do projeto de minutos para milissegundos."
+            },
+            {
+                title: "Tailwind CSS",
+                category: "frontend",
+                categoryLabel: "Frontend & UI",
+                shortDesc: "Framework de estilização rápida baseado em classes de utilidade.",
+                longDesc: "Um framework CSS voltado à produtividade. Em vez de escrever regras de CSS tradicionais, você compõe a interface de forma rápida inserindo classes prontas diretamente nos elementos HTML (como flex, p-4, text-center, bg-blue-500). O Tailwind v4 traz desempenho nativo e suporte a CSS nativo moderno.",
+                importance: "Agiliza o design visual do painel, garantindo responsividade automática (perfeito em celulares, tablets e computadores) e mantendo o código de estilos limpo."
+            },
+            {
+                title: "React Flow",
+                category: "frontend",
+                categoryLabel: "Frontend & UI",
+                shortDesc: "Biblioteca que possibilita criar o editor visual de fluxos de arrastar e soltar.",
+                longDesc: "Uma biblioteca extremamente robusta feita para React para construir aplicativos baseados em nós e diagramas conectados. É a biblioteca usada para renderizar a tela onde o usuário cria caixas de mensagens, liga cabos virtuais de uma pergunta para uma resposta e manipula o roteiro do chatbot de forma visual.",
+                importance: "É a peça central da usabilidade amigável do sistema. Permite que até pessoas sem experiência técnica consigam projetar a inteligência conversacional arrastando blocos."
+            },
+            {
+                title: "VPS (Virtual Private Server)",
+                category: "infra",
+                categoryLabel: "Deploy & VPS",
+                shortDesc: "Servidor virtual na nuvem onde o chatbot fica hospedado 24 horas por dia.",
+                longDesc: "Um servidor virtual privado rodando na nuvem. Trata-se de um computador virtual que você aluga mensalmente (em empresas como Hetzner, DigitalOcean, Contabo) para rodar o backend e o robô do WhatsApp. Isso garante que a automação continue enviando mensagens mesmo se você desligar o seu próprio computador.",
+                importance: "Essencial para colocar o projeto em produção, garantindo estabilidade e disponibilidade constante para os clientes finais."
+            },
+            {
+                title: "PM2",
+                category: "infra",
+                categoryLabel: "Deploy & VPS",
+                shortDesc: "Gerenciador que mantém o servidor Node.js rodando sem interrupções em produção.",
+                longDesc: "Gerenciador de processos de nível de produção completo para Node.js. O PM2 atua como um guardião na VPS: ele mantém o servidor backend rodando silenciosamente em segundo plano, monitora o consumo de RAM/CPU e, se por acaso o servidor quebrar por um erro inesperado, o PM2 o reinicia instantaneamente em frações de segundo.",
+                importance: "Garante a robustez operacional do chatbot em produção, reduzindo quedas de serviço e mantendo o chatbot inicializado mesmo em caso de reboot completo do servidor físico."
+            },
+            {
+                title: "Nginx",
+                category: "infra",
+                categoryLabel: "Deploy & VPS",
+                shortDesc: "Servidor web que gerencia o fluxo de rede externo e faz o redirecionamento de portas.",
+                longDesc: "Um servidor HTTP de alta performance e proxy reverso. Quando configurado na VPS, o Nginx atua como um recepcionista digital de rede: ele recebe a navegação vinda da porta padrão (80/443) do navegador sob o seu domínio e a redireciona com total segurança para as portas internas onde o chatbot está escutando.",
+                importance: "Melhora o tráfego da rede, serve conteúdos estáticos do frontend muito mais rápido e gerencia com segurança a terminação de conexões criptografadas (HTTPS)."
+            },
+            {
+                title: "Certbot / Let's Encrypt",
+                category: "infra",
+                categoryLabel: "Deploy & VPS",
+                shortDesc: "Ferramenta para instalar certificados SSL (HTTPS) gratuitos no seu domínio.",
+                longDesc: "O Let's Encrypt é uma autoridade certificadora aberta e gratuita que fornece certificados de segurança HTTPS (SSL) para toda a web. O Certbot é o utilitário em linha de comando que automatiza totalmente o processo de solicitar, instalar e renovar automaticamente esses certificados no servidor Nginx.",
+                importance: "Evita que os navegadores exibam alertas assustadores de 'Conexão Insegura' ao acessar seu painel administrativo, criptografando todos os dados confidenciais trafegados entre o administrador e a API."
+            }
+        ];
+
+        // Theme Management Logic
+        const themeBtn = document.getElementById('themeBtn');
+        const themeIcon = document.getElementById('themeIcon');
+        
+        // Load initial theme
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        updateThemeUI(savedTheme);
+
+        themeBtn.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeUI(newTheme);
+        });
+
+        function updateThemeUI(theme) {
+            if (theme === 'light') {
+                themeIcon.setAttribute('data-lucide', 'moon');
+                document.body.style.setProperty('--bg-primary', '#f8fafc');
+                document.body.style.setProperty('header-bg', 'rgba(248, 250, 252, 0.8)');
+            } else {
+                themeIcon.setAttribute('data-lucide', 'sun');
+                document.body.style.setProperty('--bg-primary', '#0b0f19');
+            }
+            if (window.lucide) {
+                lucide.createIcons();
+            }
+        }
+
+        // Print and PDF Logic
+        document.getElementById('printBtn').addEventListener('click', () => {
+            window.print();
+        });
+
+        // Elements
+        const searchInput = document.getElementById('searchInput');
+        const searchClearBtn = document.getElementById('searchClearBtn');
+        const filterTabs = document.getElementById('filterTabs');
+        const termsGrid = document.getElementById('termsGrid');
+        const emptyState = document.getElementById('emptyState');
+        
+        // Modal elements
+        const modalOverlay = document.getElementById('modalOverlay');
+        const modalClose = document.getElementById('modalClose');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalCategory = document.getElementById('modalCategory');
+        const modalDesc = document.getElementById('modalDesc');
+        const modalExtraText = document.getElementById('modalExtraText');
+        const modalExtraWrapper = document.getElementById('modalExtraWrapper');
+
+        // Toast element
+        const toast = document.getElementById('toast');
+        const toastMessage = document.getElementById('toastMessage');
+
+        let activeCategory = 'all';
+        let searchQuery = '';
+
+        // Initialize App
+        function init() {
+            renderTerms();
+            updateCounts();
+            setupEventListeners();
+        }
+
+        // Render Terms in Grid
+        function renderTerms() {
+            // Clear existing terms (keeping emptyState)
+            const cards = termsGrid.querySelectorAll('.term-card');
+            cards.forEach(card => card.remove());
+
+            const filteredTerms = termsData.filter(term => {
+                const matchesCategory = activeCategory === 'all' || term.category === activeCategory;
+                const matchesSearch = term.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                                     term.shortDesc.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                                     term.longDesc.toLowerCase().includes(searchQuery.toLowerCase());
+                return matchesCategory && matchesSearch;
+            });
+
+            if (filteredTerms.length === 0) {
+                emptyState.style.display = 'block';
+            } else {
+                emptyState.style.display = 'none';
+                filteredTerms.forEach(term => {
+                    const card = createTermCard(term);
+                    termsGrid.appendChild(card);
+                });
+            }
+            if (window.lucide) lucide.createIcons();
+        }
+
+        // Create Term HTML Card
+        function createTermCard(term) {
+            const card = document.createElement('div');
+            card.className = `term-card`;
+            card.id = `term-${term.title.replace(/\s+/g, '-').toLowerCase()}`;
+
+            card.innerHTML = `
+                <div>
+                    <div class="term-card-header">
+                        <span class="term-category cat-${term.category}">${term.categoryLabel}</span>
+                    </div>
+                    <h4 class="term-title">${term.title}</h4>
+                    <p class="term-desc">${term.shortDesc}</p>
+                </div>
+                <div class="term-footer">
+                    <button class="term-action-btn view-details" aria-label="Ver mais sobre ${term.title}">
+                        <i data-lucide="eye" style="width: 16px; height: 16px;"></i>
+                        <span>Ver Detalhes</span>
+                    </button>
+                    <button class="term-action-btn copy-link" aria-label="Copiar link para ${term.title}">
+                        <i data-lucide="link-2" style="width: 16px; height: 16px;"></i>
+                        <span>Link</span>
+                    </button>
+                </div>
+            `;
+
+            // Event Listeners for Card Actions
+            card.querySelector('.view-details').addEventListener('click', () => {
+                openTermModal(term);
+            });
+
+            card.querySelector('.copy-link').addEventListener('click', (e) => {
+                e.stopPropagation();
+                copyTermLink(term);
+            });
+
+            return card;
+        }
+
+        // Update counts on filter tabs
+        function updateCounts() {
+            document.getElementById('count-all').textContent = termsData.length;
+            document.getElementById('count-geral').textContent = termsData.filter(t => t.category === 'geral').length;
+            document.getElementById('count-backend').textContent = termsData.filter(t => t.category === 'backend').length;
+            document.getElementById('count-frontend').textContent = termsData.filter(t => t.category === 'frontend').length;
+            document.getElementById('count-infra').textContent = termsData.filter(t => t.category === 'infra').length;
+        }
+
+        // Setup Interactive Events
+        function setupEventListeners() {
+            // Search Input logic
+            searchInput.addEventListener('input', (e) => {
+                searchQuery = e.target.value;
+                if (searchQuery.length > 0) {
+                    searchClearBtn.style.display = 'flex';
+                } else {
+                    searchClearBtn.style.display = 'none';
+                }
+                renderTerms();
+            });
+
+            // Clear search
+            searchClearBtn.addEventListener('click', () => {
+                searchInput.value = '';
+                searchQuery = '';
+                searchClearBtn.style.display = 'none';
+                searchInput.focus();
+                renderTerms();
+            });
+
+            // Filter Tabs logic
+            filterTabs.addEventListener('click', (e) => {
+                const button = e.target.closest('.tab-btn');
+                if (!button) return;
+
+                // Toggle active class
+                filterTabs.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+
+                activeCategory = button.getAttribute('data-category');
+                renderTerms();
+            });
+
+            // Arch nodes in hero logic
+            document.querySelectorAll('.arch-node').forEach(node => {
+                node.addEventListener('click', () => {
+                    const termName = node.getAttribute('data-term');
+                    const term = termsData.find(t => t.title.toLowerCase().includes(termName.toLowerCase()));
+                    if (term) {
+                        openTermModal(term);
+                    }
+                });
+            });
+
+            // Modal Close Events
+            modalClose.addEventListener('click', closeTermModal);
+            modalOverlay.addEventListener('click', (e) => {
+                if (e.target === modalOverlay) closeTermModal();
+            });
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && modalOverlay.classList.contains('open')) {
+                    closeTermModal();
+                }
+            });
+
+            // Check URL Hash for deep links
+            window.addEventListener('hashchange', checkUrlHash);
+            checkUrlHash();
+        }
+
+        // Open Modal with Term details
+        function openTermModal(term) {
+            modalTitle.textContent = term.title;
+            modalCategory.textContent = term.categoryLabel;
+            modalCategory.className = `term-category cat-${term.category}`;
+            modalDesc.textContent = term.longDesc;
+
+            if (term.importance) {
+                modalExtraWrapper.style.display = 'block';
+                modalExtraText.textContent = term.importance;
+            } else {
+                modalExtraWrapper.style.display = 'none';
+            }
+
+            modalOverlay.classList.add('open');
+            document.body.style.overflow = 'hidden'; // block scrolling
+        }
+
+        // Close Modal
+        function closeTermModal() {
+            modalOverlay.classList.remove('open');
+            document.body.style.overflow = ''; // restore scrolling
+        }
+
+        // Copy term link to clipboard
+        function copyTermLink(term) {
+            const slug = term.title.replace(/\s+/g, '-').toLowerCase();
+            const shareUrl = `${window.location.origin}${window.location.pathname}#term-${slug}`;
+            
+            navigator.clipboard.writeText(shareUrl).then(() => {
+                showToast(`Link para "${term.title}" copiado com sucesso!`);
+            }).catch(err => {
+                console.error('Falha ao copiar link', err);
+            });
+        }
+
+        // Show customizable Toast notifications
+        function showToast(message) {
+            toastMessage.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Check hash to automatically display item
+        function checkUrlHash() {
+            const hash = window.location.hash;
+            if (hash && hash.startsWith('#term-')) {
+                const slug = hash.replace('#term-', '');
+                const foundTerm = termsData.find(t => t.title.replace(/\s+/g, '-').toLowerCase() === slug);
+                if (foundTerm) {
+                    // Switch to corresponding filter tab to show it
+                    activeCategory = 'all';
+                    filterTabs.querySelectorAll('.tab-btn').forEach(btn => {
+                        btn.classList.toggle('active', btn.getAttribute('data-category') === 'all');
+                    });
+                    renderTerms();
+
+                    // Scroll to the element
+                    const targetCard = document.getElementById(`term-${slug}`);
+                    if (targetCard) {
+                        targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        // Add glow anim to the card
+                        targetCard.style.borderColor = 'var(--accent-primary)';
+                        setTimeout(() => {
+                            targetCard.style.borderColor = '';
+                        }, 2000);
+                    }
+                    
+                    // Open details in modal as well
+                    openTermModal(foundTerm);
+                }
+            }
+        }
+
+        // Fire it up
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

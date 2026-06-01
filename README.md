@@ -2,6 +2,17 @@
 
 Sistema completo de chatbot WhatsApp com painel administrativo, fluxos visuais, agendamento de mensagens e suporte a multiplas conexoes (departamentos).
 
+---
+
+## 📖 Glossário & Termos do Projeto
+
+Para facilitar a compreensão do ecossistema técnico e dos termos de negócios do projeto, criamos guias explicativos detalhados:
+
+- **[Glossário Interativo em HTML (Recomendado)](glossario.html)** — Abra o arquivo `glossario.html` no seu navegador para ter uma experiência rica, com pesquisa em tempo real, filtros por categoria, modo escuro/claro e visual moderno.
+- **[Glossário Estático (Markdown)](GLOSSARIO.md)** — Versão simplificada documentada diretamente no repositório.
+
+---
+
 ## Requisitos
 
 - **Node.js** 18 ou superior (recomendado: 20+)
