@@ -433,6 +433,22 @@ function criarClient(conexaoId) {
   return estado;
 }
 
+// --- Reinicia um cliente em caso de falha crítica ---
+async function reiniciarClient(conexaoId) {
+  console.log(`\n[WHATSAPP #${conexaoId}] 🔄 Recuperando de erro crítico... Reiniciando WhatsApp Client...`);
+  const c = conexoes.get(conexaoId);
+  if (c) {
+    c.status.connected = false;
+    try {
+      await c.client.destroy();
+    } catch (e) {
+      console.warn(`[WHATSAPP #${conexaoId}] Aviso ao fechar cliente anterior:`, e.message);
+    }
+  }
+  // Cria e inicializa um novo cliente
+  return criarClient(conexaoId);
+}
+
 // --- Init: carrega todas as conexões ativas do banco ---
 async function initAllConexoes() {
   const lista = await prisma.conexao.findMany({ where: { ativo: true } });
@@ -532,6 +548,9 @@ async function listarGrupos(conexaoId) {
     return result;
   } catch (e) {
     console.error(`[WHATSAPP #${conexaoId}] Erro ao listar grupos:`, e.message);
+    if (e.message.includes('detached Frame') || e.message.includes('Protocol error') || e.message.includes('Session closed')) {
+      reiniciarClient(conexaoId).catch(() => {});
+    }
     return [];
   }
 }
@@ -540,11 +559,19 @@ async function enviarMensagemParaGrupo(conexaoId, grupoId, mensagem, tipo, media
   const client = getClient(conexaoId);
   if (!client) throw new Error('Conexão não encontrada ou offline');
 
-  if ((tipo === 'imagem' || tipo === 'video') && mediaUrl) {
-    const media = await getMediaObject(mediaUrl);
-    await client.sendMessage(grupoId, media, { caption: mensagem || '' });
-  } else {
-    await client.sendMessage(grupoId, mensagem);
+  try {
+    if ((tipo === 'imagem' || tipo === 'video') && mediaUrl) {
+      const media = await getMediaObject(mediaUrl);
+      await client.sendMessage(grupoId, media, { caption: mensagem || '' });
+    } else {
+      await client.sendMessage(grupoId, mensagem);
+    }
+  } catch (error) {
+    console.error(`[WHATSAPP #${conexaoId}] Erro ao enviar mensagem para grupo:`, error.message);
+    if (error.message.includes('detached Frame') || error.message.includes('Protocol error') || error.message.includes('Session closed')) {
+      reiniciarClient(conexaoId).catch(() => {});
+    }
+    throw error;
   }
 }
 
@@ -568,11 +595,19 @@ async function enviarMensagemParaContato(conexaoId, numeroTelefone, lid, mensage
     chatId = numeroTelefone.includes('@') ? numeroTelefone : `${numeroTelefone}@c.us`;
   }
 
-  if ((tipo === 'imagem' || tipo === 'video') && mediaUrl) {
-    const media = await getMediaObject(mediaUrl);
-    await client.sendMessage(chatId, media, { caption: mensagem || '' });
-  } else {
-    await client.sendMessage(chatId, mensagem);
+  try {
+    if ((tipo === 'imagem' || tipo === 'video') && mediaUrl) {
+      const media = await getMediaObject(mediaUrl);
+      await client.sendMessage(chatId, media, { caption: mensagem || '' });
+    } else {
+      await client.sendMessage(chatId, mensagem);
+    }
+  } catch (error) {
+    console.error(`[WHATSAPP #${conexaoId}] Erro ao enviar mensagem para contato:`, error.message);
+    if (error.message.includes('detached Frame') || error.message.includes('Protocol error') || error.message.includes('Session closed')) {
+      reiniciarClient(conexaoId).catch(() => {});
+    }
+    throw error;
   }
 }
 
@@ -593,6 +628,9 @@ async function listarContatos(conexaoId) {
       contacts = await client.getContacts();
     } catch (err) {
       console.warn(`[WHATSAPP #${conexaoId}] Falha ao ler contatos:`, err.message);
+      if (err.message.includes('detached Frame') || err.message.includes('Protocol error') || err.message.includes('Session closed')) {
+        reiniciarClient(conexaoId).catch(() => {});
+      }
     }
 
     const mapaContatos = new Map();
@@ -625,6 +663,9 @@ async function listarContatos(conexaoId) {
         chats = await client.getChats();
       } catch (err) {
         console.warn(`[WHATSAPP #${conexaoId}] Falha ao ler chats:`, err.message);
+        if (err.message.includes('detached Frame') || err.message.includes('Protocol error') || err.message.includes('Session closed')) {
+          reiniciarClient(conexaoId).catch(() => {});
+        }
       }
 
       for (const ch of chats) {
@@ -649,6 +690,9 @@ async function listarContatos(conexaoId) {
     return result.sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
   } catch (e) {
     console.error(`[WHATSAPP #${conexaoId}] Erro ao listar contatos:`, e.message);
+    if (e.message.includes('detached Frame') || e.message.includes('Protocol error') || e.message.includes('Session closed')) {
+      reiniciarClient(conexaoId).catch(() => {});
+    }
     return [];
   }
 }
