@@ -186,10 +186,17 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
   to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-6px); }
+  40%, 80% { transform: translateX(6px); }
+}
+
 .animate-fadeIn { animation: fadeIn 0.3s var(--ease) both; }
 .animate-fadeInScale { animation: fadeInScale 0.25s var(--ease) both; }
 .animate-slideIn { animation: slideIn 0.25s var(--ease) both; }
 .animate-slideUp { animation: slideUp 0.3s var(--ease) both; }
+.animate-shake { animation: shake 0.35s cubic-bezier(.36,.07,.19,.97) both; }
 
 /* Stagger Children for Fluid Page Load */
 .stagger > *:nth-child(1) { animation-delay: 0ms; }

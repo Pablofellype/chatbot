@@ -1,3 +1,10 @@
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('[ERRO INTERNO/PROMISE] Rejeição não tratada detectada:', reason);
+});
+process.on('uncaughtException', (error) => {
+  console.error('[ERRO INTERNO/EXECUÇÃO] Exceção não tratada detectada:', error);
+});
+
 const express = require('express');
 const path = require('path');
 const cors = require('cors');

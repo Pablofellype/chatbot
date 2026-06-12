@@ -15,16 +15,22 @@ api.interceptors.request.use((config) => {
   return Promise.reject(error);
 });
 
-// Intercepta respostas para deslogar em caso de erro 401 (Não Autorizado)
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      const token = localStorage.getItem('token');
-      if (token) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('usuario');
-        window.location.href = '/';
+      // Evita deslogar se for erro de senha incorreta de uma conexão específica (ou remoção de conexão)
+      const url = error.config?.url || '';
+      const method = error.config?.method?.toLowerCase() || '';
+      const isVerificarSenhaConexao = url.includes('/verificar-senha') || (url.includes('/conexoes/') && method === 'delete');
+
+      if (!isVerificarSenhaConexao) {
+        const token = localStorage.getItem('token');
+        if (token) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('usuario');
+          window.location.href = '/';
+        }
       }
     }
     return Promise.reject(error);

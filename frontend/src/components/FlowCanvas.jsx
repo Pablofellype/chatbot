@@ -52,6 +52,7 @@ function FlowEditor({ fluxo, conexoes = [], onSalvar, onVoltar }) {
   const [senhaInput, setSenhaInput] = useState('');
   const [senhaErro, setSenhaErro] = useState(false);
   const [autenticado, setAutenticado] = useState(false);
+  const [shakeActive, setShakeActive] = useState(false);
   const [confirmModal, setConfirmModal] = useState({
     isOpen: false,
     title: '',
@@ -543,7 +544,7 @@ function FlowEditor({ fluxo, conexoes = [], onSalvar, onVoltar }) {
 
                 <div className="space-y-4">
                   {conexoes.filter((c) => c.status?.connected).map((c) => (
-                    <div key={c.id} className="card p-5 border border-[var(--border)] bg-[var(--surface)] hover:border-[#F40009]/30 transition-all duration-200">
+                    <div key={c.id} className={`card p-5 border border-[var(--border)] bg-[var(--surface)] hover:border-[#F40009]/30 transition-all duration-200 ${msgsConexaoId === c.id && shakeActive ? 'animate-shake border-rose-500 shadow-md shadow-rose-500/10' : ''}`}>
                       <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-2.5 min-w-0">
                           <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
@@ -571,7 +572,11 @@ function FlowEditor({ fluxo, conexoes = [], onSalvar, onVoltar }) {
                                     await conexaoService.verificarSenha(c.id, senhaInput);
                                     setMsgsConexaoNome(c.apelido || c.nome);
                                     setAutenticado(true);
-                                  } catch { setSenhaErro(true); }
+                                  } catch { 
+                                    setSenhaErro(true);
+                                    setShakeActive(true);
+                                    setTimeout(() => setShakeActive(false), 500);
+                                  }
                                 }
                               }}
                               placeholder="Digite a senha..."
@@ -585,7 +590,11 @@ function FlowEditor({ fluxo, conexoes = [], onSalvar, onVoltar }) {
                                   await conexaoService.verificarSenha(c.id, senhaInput);
                                   setMsgsConexaoNome(c.apelido || c.nome);
                                   setAutenticado(true);
-                                } catch { setSenhaErro(true); }
+                                } catch { 
+                                  setSenhaErro(true);
+                                  setShakeActive(true);
+                                  setTimeout(() => setShakeActive(false), 500);
+                                }
                               }}
                               className="btn btn-primary btn-sm px-4 font-bold"
                             >
