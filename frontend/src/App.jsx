@@ -16,7 +16,7 @@ function App() {
     }
   });
   const [verificandoSessao, setVerificandoSessao] = useState(!!localStorage.getItem('token'));
-  const [pagina, setPagina] = useState('fluxos');
+  const [pagina, setPagina] = useState('conexao');
   const [fluxos, setFluxos] = useState([]);
   const [conexoes, setConexoes] = useState([]);
   const [editando, setEditando] = useState(null);
@@ -190,9 +190,9 @@ function App() {
   }
 
   const menuItems = [
-    { id: 'fluxos', label: 'Fluxos', icon: <svg className="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" /></svg> },
     { id: 'conexao', label: 'Conexões', icon: <svg className="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" /></svg> },
     { id: 'numeros', label: 'Números', icon: <svg className="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128H5.228A2.25 2.25 0 013 16.878v-.003c0-1.113.285-2.16.786-3.07m0 0a9.394 9.394 0 014.568-4.272M9.354 9.533a4.125 4.125 0 117.292 0 4.125 4.125 0 01-7.292 0z" /></svg> },
+    { id: 'fluxos', label: 'Fluxos', icon: <svg className="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" /></svg> },
     { id: 'agendamentos', label: 'Agendamentos', icon: <svg className="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> },
   ];
 
