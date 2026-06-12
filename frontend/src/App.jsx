@@ -238,7 +238,16 @@ function App() {
               className={`sidebar-item ${pagina === item.id ? 'sidebar-item-active' : ''}`}
             >
               {item.icon}
-              <span>{item.label}</span>
+              <span className="flex-1">{item.label}</span>
+              {item.id === 'conexao' && onlineCount > 0 && (
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${
+                  pagina === 'conexao' 
+                    ? 'bg-white text-[#F40009]' 
+                    : 'bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400'
+                }`}>
+                  {onlineCount}
+                </span>
+              )}
             </button>
           ))}
         </nav>
@@ -306,6 +315,28 @@ function App() {
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
                 Novo Fluxo
               </button>
+            </div>
+
+            {/* Insights Bar */}
+            <div className="mb-8 p-4 rounded-2xl bg-gradient-to-r from-red-50/60 to-white border border-[#E2E8F0] dark:from-[#180506]/35 dark:to-[#0f172a] shadow-xs flex items-center justify-between gap-4 animate-fadeIn">
+              <div className="flex items-center gap-3.5">
+                <div className="w-10 h-10 bg-[#F40009]/10 rounded-xl flex items-center justify-center shrink-0 border border-[#F40009]/20 shadow-xs">
+                  <svg className="w-5.5 h-5.5 text-[#F40009]" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 18a3.75 3.75 0 00.495-7.467 5.99 5.99 0 00-1.925 3.546 5.974 5.974 0 01-2.133-1A3.75 3.75 0 0012 18z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 21m0 0l-1.5-1.5M9 21l1.5-1.5m3.313-3.596L15 21m0 0l-1.5-1.5M15 21l1.5-1.5" />
+                  </svg>
+                </div>
+                <div>
+                  <h4 className="text-[10px] font-extrabold uppercase tracking-widest text-[#F40009]">Dica de Desempenho</h4>
+                  <p className="text-xs text-[var(--text-secondary)] font-medium mt-1 transition-all duration-300">
+                    {sugestoesIA[sugestaoIndex]}
+                  </p>
+                </div>
+              </div>
+              <div className="hidden sm:flex items-center gap-1.5 bg-[var(--surface-sunken)] px-3 py-1.5 rounded-xl border border-[var(--border)] text-[9px] font-extrabold text-[var(--text-secondary)] shrink-0 uppercase tracking-widest">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#F40009]" />
+                Insight Ativo
+              </div>
             </div>
 
             {/* Stats com Sparklines Reais (Super Premium!) */}
