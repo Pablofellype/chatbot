@@ -534,14 +534,29 @@ function getClient(conexaoId) {
 }
 
 async function listarGrupos(conexaoId) {
-  const client = getClient(conexaoId);
-  if (!client) return [];
+  const c = conexoes.get(conexaoId);
+  if (!c || !c.status?.connected || !c.client) return [];
+  const client = c.client;
   try {
-    const chats = await client.getChats();
-    const grupos = chats.filter((c) => c.isGroup);
-    const result = [];
-    for (const g of grupos) {
-      result.push({ id: g.id._serialized, nome: g.name, foto: null });
+    let result = [];
+    try {
+      result = await client.pupPage.evaluate(() => {
+        if (!window.Store || !window.Store.Chat) return [];
+        return window.Store.Chat.models
+          .filter(chat => chat.isGroup)
+          .map(chat => ({
+            id: chat.id._serialized || chat.id,
+            nome: chat.name || chat.formattedTitle || '',
+            foto: null
+          }));
+      });
+    } catch (evalErr) {
+      console.warn(`[WHATSAPP #${conexaoId}] Falha na avaliação direta de grupos, tentando getChats fallback:`, evalErr.message);
+      const chats = await client.getChats();
+      const grupos = chats.filter((c) => c.isGroup);
+      for (const g of grupos) {
+        result.push({ id: g.id._serialized, nome: g.name, foto: null });
+      }
     }
     return result;
   } catch (e) {
@@ -617,73 +632,127 @@ async function destruirTodas() {
 }
 
 async function listarContatos(conexaoId) {
-  const client = getClient(conexaoId);
-  if (!client) return [];
+  const c = conexoes.get(conexaoId);
+  if (!c || !c.status?.connected || !c.client) return [];
+  const client = c.client;
   try {
-    // Tenta buscar os contatos salvos da agenda completa
-    let contacts = [];
+    // Tenta fazer a listagem rápida e direta de contatos no navegador para evitar serializações pesadas
+    let result = [];
     try {
-      contacts = await client.getContacts();
-    } catch (err) {
-      console.warn(`[WHATSAPP #${conexaoId}] Falha ao ler contatos:`, err.message);
-      if (err.message.includes('detached Frame') || err.message.includes('Protocol error') || err.message.includes('Session closed')) {
-        reiniciarClient(conexaoId).catch(() => {});
-      }
-    }
-
-    const mapaContatos = new Map();
-
-    // Filtra apenas contatos reais salvos na agenda do WhatsApp
-    for (const c of contacts) {
-      if (!c.isGroup && c.id && c.id.user !== 'status' && !c.id.user.includes('broadcast')) {
-        const numero = c.number || c.id.user;
+      result = await client.pupPage.evaluate(() => {
+        if (!window.Store || !window.Store.Contact) return [];
         
-        // Números reais têm de 10 a 14 dígitos. LIDs e IDs sintéticos têm 15+ dígitos.
-        const ehNumeroValido = numero && /^\d+$/.test(numero) && numero.length >= 10 && numero.length <= 14;
+        const contacts = window.Store.Contact.models;
+        const mapaContatos = {};
         
-        // Filtra apenas contatos que estão salvos na agenda do celular (isMyContact) e possuem número válido
-        if (c.isMyContact && ehNumeroValido) {
-          mapaContatos.set(c.id._serialized, {
-            id: c.id._serialized,
-            numero,
-            nome: c.name || c.pushname || c.formattedName || numero,
-            isMyContact: true
-          });
+        for (const c of contacts) {
+          if (c.isGroup) continue;
+          if (!c.id || c.id.user === 'status' || c.id.user.includes('broadcast')) continue;
+          
+          const numero = c.number || c.id.user;
+          const ehNumeroValido = numero && /^\d+$/.test(numero) && numero.length >= 10 && numero.length <= 14;
+          
+          if (c.isMyContact && ehNumeroValido) {
+            mapaContatos[c.id._serialized] = {
+              id: c.id._serialized,
+              numero,
+              nome: c.name || c.pushname || c.formattedName || numero,
+              isMyContact: true
+            };
+          }
         }
-      }
-    }
-
-    // Se a agenda estiver demorando para sincronizar e o mapa estiver vazio,
-    // usamos os chats ativos como fallback, mas filtrando apenas números de formato válido (sem LIDs)
-    if (mapaContatos.size === 0) {
-      let chats = [];
+        
+        // Se a agenda estiver vazia, tenta usar os chats ativos
+        if (Object.keys(mapaContatos).length === 0 && window.Store.Chat) {
+          const chats = window.Store.Chat.models;
+          for (const ch of chats) {
+            if (ch.isGroup) continue;
+            if (!ch.id || ch.id.user === 'status' || ch.id.user.includes('broadcast')) continue;
+            
+            const numero = ch.id.user;
+            const ehNumeroValido = numero && /^\d+$/.test(numero) && numero.length >= 10 && numero.length <= 14;
+            
+            if (ehNumeroValido) {
+              mapaContatos[ch.id._serialized] = {
+                id: ch.id._serialized,
+                numero,
+                nome: ch.name || numero,
+                isMyContact: false
+              };
+            }
+          }
+        }
+        
+        return Object.values(mapaContatos);
+      });
+    } catch (evalErr) {
+      console.warn(`[WHATSAPP #${conexaoId}] Falha na avaliação direta de contatos, usando getContacts fallback:`, evalErr.message);
+      // Tenta buscar os contatos salvos da agenda completa
+      let contacts = [];
       try {
-        chats = await client.getChats();
+        contacts = await client.getContacts();
       } catch (err) {
-        console.warn(`[WHATSAPP #${conexaoId}] Falha ao ler chats:`, err.message);
+        console.warn(`[WHATSAPP #${conexaoId}] Falha ao ler contatos:`, err.message);
         if (err.message.includes('detached Frame') || err.message.includes('Protocol error') || err.message.includes('Session closed')) {
           reiniciarClient(conexaoId).catch(() => {});
         }
       }
 
-      for (const ch of chats) {
-        if (!ch.isGroup && ch.id && ch.id.user !== 'status' && !ch.id.user.includes('broadcast')) {
-          const numero = ch.id.user;
+      const mapaContatos = new Map();
+
+      // Filtra apenas contatos reais salvos na agenda do WhatsApp
+      for (const c of contacts) {
+        if (!c.isGroup && c.id && c.id.user !== 'status' && !c.id.user.includes('broadcast')) {
+          const numero = c.number || c.id.user;
+          
+          // Números reais têm de 10 a 14 dígitos. LIDs e IDs sintéticos têm 15+ dígitos.
           const ehNumeroValido = numero && /^\d+$/.test(numero) && numero.length >= 10 && numero.length <= 14;
           
-          if (ehNumeroValido) {
-            mapaContatos.set(ch.id._serialized, {
-              id: ch.id._serialized,
+          // Filtra apenas contatos que estão salvos na agenda do celular (isMyContact) e possuem número válido
+          if (c.isMyContact && ehNumeroValido) {
+            mapaContatos.set(c.id._serialized, {
+              id: c.id._serialized,
               numero,
-              nome: ch.name || numero,
-              isMyContact: false
+              nome: c.name || c.pushname || c.formattedName || numero,
+              isMyContact: true
             });
           }
         }
       }
+
+      // Se a agenda estiver demorando para sincronizar e o mapa estiver vazio,
+      // usamos os chats ativos como fallback, mas filtrando apenas números de formato válido (sem LIDs)
+      if (mapaContatos.size === 0) {
+        let chats = [];
+        try {
+          chats = await client.getChats();
+        } catch (err) {
+          console.warn(`[WHATSAPP #${conexaoId}] Falha ao ler chats:`, err.message);
+          if (err.message.includes('detached Frame') || err.message.includes('Protocol error') || err.message.includes('Session closed')) {
+            reiniciarClient(conexaoId).catch(() => {});
+          }
+        }
+
+        for (const ch of chats) {
+          if (!ch.isGroup && ch.id && ch.id.user !== 'status' && !ch.id.user.includes('broadcast')) {
+            const numero = ch.id.user;
+            const ehNumeroValido = numero && /^\d+$/.test(numero) && numero.length >= 10 && numero.length <= 14;
+            
+            if (ehNumeroValido) {
+              mapaContatos.set(ch.id._serialized, {
+                id: ch.id._serialized,
+                numero,
+                nome: ch.name || numero,
+                isMyContact: false
+              });
+            }
+          }
+        }
+      }
+
+      result = Array.from(mapaContatos.values());
     }
 
-    const result = Array.from(mapaContatos.values());
     // Ordena alfabeticamente por nome
     return result.sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
   } catch (e) {
