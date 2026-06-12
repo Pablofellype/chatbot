@@ -206,7 +206,7 @@ function App() {
   });
 
   return (
-    <div className="min-h-screen flex font-['Barlow'] transition-colors duration-200" style={{ background: 'var(--bg)' }}>
+    <div className="min-h-screen flex font-['Inter'] transition-colors duration-200" style={{ background: 'var(--bg)' }}>
       {/* ─── SIDEBAR ─── */}
       <aside className="w-[260px] flex flex-col shrink-0 relative overflow-hidden">
         {/* Brand Header */}
