@@ -63,6 +63,33 @@ export default function NumerosPage() {
   const [novoLid, setNovoLid] = useState('');
   const [editando, setEditando] = useState(null);
   const [editForm, setEditForm] = useState({ numero: '', nome: '', lid: '' });
+  const [modalConfig, setModalConfig] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    type: 'alert', // 'alert' or 'confirm'
+    onConfirm: null
+  });
+
+  const mostrarAlerta = (titulo, mensagem) => {
+    setModalConfig({
+      isOpen: true,
+      title: titulo,
+      message: mensagem,
+      type: 'alert',
+      onConfirm: null
+    });
+  };
+
+  const mostrarConfirmacao = (titulo, mensagem, aoConfirmar) => {
+    setModalConfig({
+      isOpen: true,
+      title: titulo,
+      message: mensagem,
+      type: 'confirm',
+      onConfirm: aoConfirmar
+    });
+  };
 
   const selectedCountry = COUNTRIES.find(c => c.ddi === novoDdi) || COUNTRIES[0];
   const filteredCountries = COUNTRIES.filter(c => 
@@ -83,7 +110,7 @@ export default function NumerosPage() {
   const handleAdicionar = async (e) => {
     e.preventDefault();
     if (!novoDdd.trim() || !novoTel.trim()) {
-      alert('Por favor, preencha o DDD e o Número.');
+      mostrarAlerta('Campos Obrigatórios', 'Por favor, preencha o DDD e o Número.');
       return;
     }
     
@@ -96,7 +123,7 @@ export default function NumerosPage() {
       setMostrarForm(false);
       carregar();
     } catch (error) {
-      alert(error.response?.data?.erro || 'Erro ao adicionar');
+      mostrarAlerta('Erro', error.response?.data?.erro || 'Erro ao adicionar');
     }
   };
 
@@ -120,7 +147,7 @@ export default function NumerosPage() {
       setEditando(null);
       carregar();
     } catch (error) {
-      alert(error.response?.data?.erro || 'Erro ao salvar');
+      mostrarAlerta('Erro', error.response?.data?.erro || 'Erro ao salvar');
     }
   };
 
@@ -130,9 +157,14 @@ export default function NumerosPage() {
   };
 
   const handleDeletar = async (id) => {
-    if (!confirm('Remover este numero?')) return;
-    await numeroService.deletar(id);
-    carregar();
+    mostrarConfirmacao('Remover Número', 'Tem certeza que deseja remover este número autorizado?', async () => {
+      try {
+        await numeroService.deletar(id);
+        carregar();
+      } catch (err) {
+        mostrarAlerta('Erro', err.response?.data?.erro || 'Erro ao remover número');
+      }
+    });
   };
 
   const getAvatar = (num) => {
@@ -396,6 +428,37 @@ export default function NumerosPage() {
               )}
             </div>
           ))}
+        </div>
+      )}
+      {/* Custom Modal (Visual Brasal Premium) */}
+      {modalConfig.isOpen && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
+          <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-6 w-full max-w-sm shadow-2xl animate-fadeInScale">
+            <h3 className="text-base font-bold text-[var(--text-primary)] font-display mb-2">{modalConfig.title}</h3>
+            <p className="text-xs text-[var(--text-secondary)] mb-6">{modalConfig.message}</p>
+            
+            <div className="flex justify-end gap-3">
+              {modalConfig.type === 'confirm' && (
+                <button
+                  type="button"
+                  onClick={() => setModalConfig({ ...modalConfig, isOpen: false })}
+                  className="btn btn-ghost btn-sm"
+                >
+                  Cancelar
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => {
+                  setModalConfig((prev) => ({ ...prev, isOpen: false }));
+                  if (modalConfig.onConfirm) modalConfig.onConfirm();
+                }}
+                className="btn btn-primary btn-sm"
+              >
+                Confirmar
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

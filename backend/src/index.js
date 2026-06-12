@@ -9,6 +9,8 @@ const conexaoRoutes = require('./routes/conexaoRoutes');
 const mensagemAutoRoutes = require('./routes/mensagemAutoRoutes');
 const mensagemIndividualRoutes = require('./routes/mensagemIndividualRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
+const authRoutes = require('./routes/authRoutes');
+const authMiddleware = require('./middlewares/authMiddleware');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -17,12 +19,13 @@ app.use(cors());
 app.use(express.json());
 
 // Rotas da API
-app.use('/api/fluxos', fluxoRoutes);
-app.use('/api/numeros', numeroRoutes);
-app.use('/api/conexoes', conexaoRoutes);
-app.use('/api/mensagens-auto', mensagemAutoRoutes);
-app.use('/api/mensagens-individuais', mensagemIndividualRoutes);
-app.use('/api/upload', uploadRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/fluxos', authMiddleware, fluxoRoutes);
+app.use('/api/numeros', authMiddleware, numeroRoutes);
+app.use('/api/conexoes', authMiddleware, conexaoRoutes);
+app.use('/api/mensagens-auto', authMiddleware, mensagemAutoRoutes);
+app.use('/api/mensagens-individuais', authMiddleware, mensagemIndividualRoutes);
+app.use('/api/upload', authMiddleware, uploadRoutes);
 
 // Serve uploads estáticos
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));

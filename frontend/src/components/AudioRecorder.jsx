@@ -1,6 +1,5 @@
 import { useState, useRef } from 'react';
-
-const API_URL = import.meta.env.VITE_API_URL || '/api';
+import api from '../services/api';
 
 export default function AudioRecorder({ onRecorded }) {
   const [gravando, setGravando] = useState(false);
@@ -80,16 +79,16 @@ export default function AudioRecorder({ onRecorded }) {
     try {
       const formData = new FormData();
       formData.append('audio', blob, 'gravacao.webm');
-      const res = await fetch(`${API_URL}/upload/audio`, { method: 'POST', body: formData });
-      if (!res.ok) throw new Error('Erro no servidor');
-      const data = await res.json();
-      if (data.url) {
-        onRecorded(data.url);
+      const res = await api.post('/upload/audio', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      if (res.data?.url) {
+        onRecorded(res.data.url);
       } else {
         setErro('Erro ao processar audio');
       }
     } catch (e) {
-      setErro('Erro ao enviar: ' + e.message);
+      setErro('Erro ao enviar: ' + (e.response?.data?.erro || e.message));
     }
     setUploading(false);
   };

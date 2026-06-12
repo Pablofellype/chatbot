@@ -97,3 +97,11 @@ model MensagemIndividual {
   criadoEm      DateTime         @default(now())
   atualizadoEm  DateTime         @updatedAt
 }
+
+model Usuario {
+  id        Int      @id @default(autoincrement())
+  username  String   @unique
+  password  String
+  nome      String?
+  criadoEm  DateTime @default(now())
+}

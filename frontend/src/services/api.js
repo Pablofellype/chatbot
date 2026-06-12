@@ -4,6 +4,38 @@ const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || '/api',
 });
 
+// Intercepta requisições para adicionar o token de autenticação
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+}, (error) => {
+  return Promise.reject(error);
+});
+
+// Intercepta respostas para deslogar em caso de erro 401 (Não Autorizado)
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      const token = localStorage.getItem('token');
+      if (token) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('usuario');
+        window.location.href = '/';
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
+export const authService = {
+  login: (username, password) => api.post('/auth/login', { username, password }),
+  me: () => api.get('/auth/me'),
+};
+
 export const fluxoService = {
   listar: () => api.get('/fluxos'),
   obter: (id) => api.get(`/fluxos/${id}`),
@@ -25,7 +57,7 @@ export const conexaoService = {
   criar: (data) => api.post('/conexoes', data),
   status: (id) => api.get(`/conexoes/${id}/status`),
   atualizar: (id, data) => api.put(`/conexoes/${id}`, data),
-  deletar: (id) => api.delete(`/conexoes/${id}`),
+  deletar: (id, senha) => api.delete(`/conexoes/${id}`, { data: { senha } }),
   logout: (id) => api.post(`/conexoes/${id}/logout`),
   reconectar: (id) => api.post(`/conexoes/${id}/reconectar`),
   verificarSenha: (id, senha) => api.post(`/conexoes/${id}/verificar-senha`, { senha }),

@@ -1,11 +1,21 @@
 import { useState, useEffect } from 'react';
-import { fluxoService, conexaoService } from './services/api';
+import { fluxoService, conexaoService, authService } from './services/api';
 import FlowCanvas from './components/FlowCanvas';
 import ConexaoPage from './components/ConexaoPage';
 import NumerosPage from './components/NumerosPage';
 import MensagensIndividuaisPage from './components/MensagensIndividuaisPage';
+import LoginPage from './components/LoginPage';
 
 function App() {
+  const [usuario, setUsuario] = useState(() => {
+    try {
+      const stored = localStorage.getItem('usuario');
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  });
+  const [verificandoSessao, setVerificandoSessao] = useState(!!localStorage.getItem('token'));
   const [pagina, setPagina] = useState('fluxos');
   const [fluxos, setFluxos] = useState([]);
   const [conexoes, setConexoes] = useState([]);
@@ -13,10 +23,35 @@ function App() {
   const [modoEditor, setModoEditor] = useState(false);
   const [loading, setLoading] = useState(true);
   const [botOnline, setBotOnline] = useState(false);
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: null
+  });
 
   // Filtros e busca
   const [busca, setBusca] = useState('');
   const [conexaoFiltro, setConexaoFiltro] = useState('');
+
+  useEffect(() => {
+    const verificarSessao = async () => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          const { data } = await authService.me();
+          setUsuario(data);
+          localStorage.setItem('usuario', JSON.stringify(data));
+        } catch (e) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('usuario');
+          setUsuario(null);
+        }
+      }
+      setVerificandoSessao(false);
+    };
+    verificarSessao();
+  }, []);
 
   // Sugestões inteligentes da IA personalizadas para a Coca-Cola
   const sugestoesIA = [
@@ -66,14 +101,18 @@ function App() {
   };
 
   useEffect(() => { 
-    carregarFluxos(); 
-    carregarConexoes(); 
-  }, []);
+    if (usuario) {
+      carregarFluxos(); 
+      carregarConexoes(); 
+    }
+  }, [usuario]);
 
   useEffect(() => { 
-    const i = setInterval(carregarConexoes, 10000); 
-    return () => clearInterval(i); 
-  }, []);
+    if (usuario) {
+      const i = setInterval(carregarConexoes, 10000); 
+      return () => clearInterval(i); 
+    }
+  }, [usuario]);
 
   const handleEditar = (f) => { 
     setEditando(f); 
@@ -106,9 +145,15 @@ function App() {
   };
 
   const handleDeletar = async (id) => { 
-    if (!confirm('Deseja remover este fluxo?')) return; 
-    await fluxoService.deletar(id); 
-    carregarFluxos(); 
+    setConfirmModal({
+      isOpen: true,
+      title: 'Excluir Fluxo',
+      message: 'Tem certeza que deseja remover este fluxo permanentemente?',
+      onConfirm: async () => {
+        await fluxoService.deletar(id); 
+        carregarFluxos();
+      }
+    });
   };
 
   const handleToggle = async (f) => { 
@@ -120,6 +165,24 @@ function App() {
     await fluxoService.duplicar(id); 
     carregarFluxos(); 
   };
+
+  if (verificandoSessao) {
+    return (
+      <div className="min-h-screen w-full flex items-center justify-center" style={{ background: 'var(--bg)' }}>
+        <div className="flex flex-col items-center gap-3">
+          <svg className="animate-spin h-8 w-8 text-[#F40009]" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+          </svg>
+          <span className="text-sm font-semibold text-[var(--text-secondary)]">Verificando sessão...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!usuario) {
+    return <LoginPage onLoginSuccess={(u) => setUsuario(u)} />;
+  }
 
   if (modoEditor) {
     return <FlowCanvas fluxo={editando} conexoes={conexoes} onSalvar={handleSalvar} onVoltar={() => { setModoEditor(false); setEditando(null); }} />;
@@ -188,11 +251,29 @@ function App() {
           </svg>
         </div>
 
-        {/* Footer with Dark Mode Switch */}
-        <div className="px-6 py-4 border-t border-[var(--border-light)] flex items-center justify-end z-10 bg-transparent">
+        {/* Footer with User Info, Logout & Dark Mode Switch */}
+        <div className="px-6 py-4 border-t border-[var(--border-light)] flex items-center justify-between z-10 bg-transparent gap-3">
+          <div className="flex flex-col min-w-0">
+            <span className="text-[12px] font-bold text-[var(--text-primary)] truncate">
+              {usuario?.nome || usuario?.username}
+            </span>
+            <button
+              onClick={() => {
+                localStorage.removeItem('token');
+                localStorage.removeItem('usuario');
+                setUsuario(null);
+              }}
+              className="text-[10px] font-semibold text-rose-500 hover:text-rose-600 flex items-center gap-1 mt-0.5 cursor-pointer transition-colors active:scale-95"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
+              </svg>
+              Sair
+            </button>
+          </div>
           <button
             onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
-            className="w-7 h-7 rounded-lg bg-[var(--surface-sunken)] hover:bg-[var(--border)] flex items-center justify-center text-[var(--text-secondary)] cursor-pointer transition-all border border-[var(--border)] active:scale-95"
+            className="w-7 h-7 rounded-lg bg-[var(--surface-sunken)] hover:bg-[var(--border)] flex items-center justify-center text-[var(--text-secondary)] cursor-pointer transition-all border border-[var(--border)] active:scale-95 shrink-0"
             title={theme === 'light' ? 'Ativar Modo Escuro' : 'Ativar Modo Claro'}
           >
             {theme === 'light' ? (
@@ -394,6 +475,35 @@ function App() {
           </div>
         )}
       </main>
+      {/* Modal de Confirmação customizado (Estilo Brasal) */}
+      {confirmModal.isOpen && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
+          <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-6 w-full max-w-sm shadow-2xl animate-fadeInScale">
+            <h3 className="text-base font-bold text-[var(--text-primary)] font-display mb-2">{confirmModal.title}</h3>
+            <p className="text-xs text-[var(--text-secondary)] mb-6">{confirmModal.message}</p>
+            
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+                className="btn btn-ghost btn-sm"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setConfirmModal((prev) => ({ ...prev, isOpen: false }));
+                  confirmModal.onConfirm();
+                }}
+                className="btn btn-primary btn-sm"
+              >
+                Confirmar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

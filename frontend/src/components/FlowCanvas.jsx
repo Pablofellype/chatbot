@@ -52,6 +52,12 @@ function FlowEditor({ fluxo, conexoes = [], onSalvar, onVoltar }) {
   const [senhaInput, setSenhaInput] = useState('');
   const [senhaErro, setSenhaErro] = useState(false);
   const [autenticado, setAutenticado] = useState(false);
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: null
+  });
 
   // --- Undo/Redo ---
   const historyRef = useRef([{ nodes: fluxo?.mapa?.nodes || [], edges: fluxo?.mapa?.edges || [] }]);
@@ -114,10 +120,15 @@ function FlowEditor({ fluxo, conexoes = [], onSalvar, onVoltar }) {
 
   const onEdgeClick = useCallback((event, edge) => {
     event.stopPropagation();
-    if (confirm('Deseja desconectar esta linha de ligação?')) {
-      setEdges((eds) => eds.filter((e) => e.id !== edge.id));
-      setTimeout(saveHistory, 0);
-    }
+    setConfirmModal({
+      isOpen: true,
+      title: 'Desconectar Ligação',
+      message: 'Tem certeza que deseja desconectar esta linha de ligação?',
+      onConfirm: () => {
+        setEdges((eds) => eds.filter((e) => e.id !== edge.id));
+        setTimeout(saveHistory, 0);
+      }
+    });
   }, [setEdges, saveHistory]);
 
   const onPaneClick = useCallback(() => setSelectedNode(null), []);
@@ -447,6 +458,35 @@ function FlowEditor({ fluxo, conexoes = [], onSalvar, onVoltar }) {
               </div>
             </div>
           )}
+        </div>
+      )}
+      {/* Modal de Confirmação customizado (Estilo Brasal) */}
+      {confirmModal.isOpen && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
+          <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-6 w-full max-w-sm shadow-2xl animate-fadeInScale">
+            <h3 className="text-base font-bold text-[var(--text-primary)] font-display mb-2">{confirmModal.title}</h3>
+            <p className="text-xs text-[var(--text-secondary)] mb-6">{confirmModal.message}</p>
+            
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+                className="btn btn-ghost btn-sm"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setConfirmModal((prev) => ({ ...prev, isOpen: false }));
+                  confirmModal.onConfirm();
+                }}
+                className="btn btn-primary btn-sm"
+              >
+                Confirmar
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

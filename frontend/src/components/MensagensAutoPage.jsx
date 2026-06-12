@@ -3,6 +3,23 @@ import { mensagemAutoService } from '../services/api';
 import MediaUploader from './MediaUploader';
 
 const freqLabels = { uma_vez: 'Uma vez', diario: 'Diario', semanal: 'Semanal' };
+
+const API_URL = import.meta.env.VITE_API_URL || '/api';
+
+const getMediaSrc = (url) => {
+  if (!url) return '';
+  let cleanUrl = url.replace(/\\/g, '/');
+  if (!cleanUrl.startsWith('/') && !cleanUrl.startsWith('http')) {
+    cleanUrl = '/' + cleanUrl;
+  }
+  if (cleanUrl.startsWith('/uploads/')) {
+    if (API_URL === '/api') return cleanUrl;
+    const baseUrl = API_URL.endsWith('/api') ? API_URL.slice(0, -4) : API_URL;
+    return `${baseUrl}${cleanUrl}`;
+  }
+  return url;
+};
+
 const diasOptions = [
   { valor: 'seg', label: 'Seg' }, { valor: 'ter', label: 'Ter' },
   { valor: 'qua', label: 'Qua' }, { valor: 'qui', label: 'Qui' },
@@ -23,6 +40,33 @@ export default function MensagensAutoPage({ conexaoIdFixa, conexaoNome }) {
   const [enviando, setEnviando] = useState(null);
   const [salvando, setSalvando] = useState(false);
   const [form, setForm] = useState({ ...formVazio });
+  const [modalConfig, setModalConfig] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    type: 'alert', // 'alert' or 'confirm'
+    onConfirm: null
+  });
+
+  const mostrarAlerta = (titulo, mensagem) => {
+    setModalConfig({
+      isOpen: true,
+      title: titulo,
+      message: mensagem,
+      type: 'alert',
+      onConfirm: null
+    });
+  };
+
+  const mostrarConfirmacao = (titulo, mensagem, aoConfirmar) => {
+    setModalConfig({
+      isOpen: true,
+      title: titulo,
+      message: mensagem,
+      type: 'confirm',
+      onConfirm: aoConfirmar
+    });
+  };
 
   // Popup
   const [mostrarPopup, setMostrarPopup] = useState(false);
@@ -88,12 +132,26 @@ export default function MensagensAutoPage({ conexaoIdFixa, conexaoNome }) {
   const handleCancelarEdicao = () => { setEditandoId(null); setForm({ ...formVazio }); };
 
   const handleToggle = async (msg) => { await mensagemAutoService.atualizar(msg.id, { ativo: !msg.ativo }); carregar(); };
-  const handleDeletar = async (id) => { if (!confirm('Remover esta mensagem?')) return; await mensagemAutoService.deletar(id); carregar(); };
+  const handleDeletar = async (id) => {
+    mostrarConfirmacao('Remover Mensagem', 'Tem certeza que deseja remover esta mensagem automática?', async () => {
+      try {
+        await mensagemAutoService.deletar(id);
+        carregar();
+      } catch (err) {
+        mostrarAlerta('Erro', err.response?.data?.erro || 'Erro ao remover mensagem');
+      }
+    });
+  };
   const handleEnviar = async (id) => {
     setEnviando(id);
-    try { await mensagemAutoService.enviar(id); carregar(); }
-    catch (e) { alert('Erro: ' + (e.response?.data?.erro || e.message)); }
-    finally { setEnviando(null); }
+    try {
+      await mensagemAutoService.enviar(id);
+      carregar();
+    } catch (e) {
+      mostrarAlerta('Erro ao Enviar', e.response?.data?.erro || e.message);
+    } finally {
+      setEnviando(null);
+    }
   };
 
   const handleSelecionarGrupo = (grupo) => {
@@ -213,7 +271,27 @@ export default function MensagensAutoPage({ conexaoIdFixa, conexaoNome }) {
                                 <button onClick={() => handleDeletar(msg.id)} className="text-gray-500 hover:text-red-400 text-[10px] border border-gray-200 px-2 py-1 rounded-lg cursor-pointer hover:border-red-500/30">Excluir</button>
                               </div>
                             </div>
-                            {msg.mediaUrl && <p className="text-[10px] text-indigo-400 truncate mb-1">{msg.mediaUrl}</p>}
+                            {msg.mediaUrl && (
+                              <div className="mt-1.5 mb-2 max-w-[200px] border border-gray-200 rounded-lg overflow-hidden bg-white p-1 shadow-sm">
+                                {msg.tipo === 'imagem' ? (
+                                  <img
+                                    src={getMediaSrc(msg.mediaUrl)}
+                                    alt="Anexo agendado"
+                                    className="max-h-24 w-auto object-contain rounded mx-auto"
+                                  />
+                                ) : msg.tipo === 'video' ? (
+                                  <video
+                                    src={getMediaSrc(msg.mediaUrl)}
+                                    controls
+                                    className="max-h-24 w-auto object-contain rounded mx-auto"
+                                  />
+                                ) : (
+                                  <a href={getMediaSrc(msg.mediaUrl)} target="_blank" rel="noreferrer" className="text-[10px] text-indigo-500 font-semibold underline truncate block p-0.5">
+                                    📂 {msg.mediaUrl.split('/').pop()}
+                                  </a>
+                                )}
+                              </div>
+                            )}
                             <p className="text-xs text-gray-500 whitespace-pre-wrap mb-1">{msg.mensagem}</p>
                             <div className="flex items-center gap-2 text-[10px] text-gray-500">
                               <span>{freqLabels[msg.frequencia] || msg.frequencia}</span>
@@ -300,6 +378,37 @@ export default function MensagensAutoPage({ conexaoIdFixa, conexaoNome }) {
                   ))}
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Custom Modal (Visual Brasal Premium) */}
+      {modalConfig.isOpen && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
+          <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-6 w-full max-w-sm shadow-2xl animate-fadeInScale">
+            <h3 className="text-base font-bold text-[var(--text-primary)] font-display mb-2">{modalConfig.title}</h3>
+            <p className="text-xs text-[var(--text-secondary)] mb-6">{modalConfig.message}</p>
+            
+            <div className="flex justify-end gap-3">
+              {modalConfig.type === 'confirm' && (
+                <button
+                  type="button"
+                  onClick={() => setModalConfig({ ...modalConfig, isOpen: false })}
+                  className="btn btn-ghost btn-sm"
+                >
+                  Cancelar
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => {
+                  setModalConfig((prev) => ({ ...prev, isOpen: false }));
+                  if (modalConfig.onConfirm) modalConfig.onConfirm();
+                }}
+                className="btn btn-primary btn-sm"
+              >
+                Confirmar
+              </button>
             </div>
           </div>
         </div>

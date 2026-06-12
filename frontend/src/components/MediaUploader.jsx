@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import api from '../services/api';
 
 const API_URL = import.meta.env.VITE_API_URL || '/api';
 
@@ -17,24 +18,17 @@ export default function MediaUploader({ mediaUrl, type, onChange }) {
       const formData = new FormData();
       formData.append('file', file);
 
-      const res = await fetch(`${API_URL}/upload/media`, {
-        method: 'POST',
-        body: formData,
+      const res = await api.post('/upload/media', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
       });
 
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.erro || 'Erro ao enviar arquivo');
-      }
-
-      const data = await res.json();
-      if (data.url) {
-        onChange(data.url);
+      if (res.data?.url) {
+        onChange(res.data.url);
       } else {
         throw new Error('Retorno do servidor invalido');
       }
     } catch (err) {
-      setErro('Erro no upload: ' + err.message);
+      setErro('Erro no upload: ' + (err.response?.data?.erro || err.message));
     } finally {
       setUploading(false);
     }

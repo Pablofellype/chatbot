@@ -57,6 +57,9 @@ async function verificarEEnviar() {
           data: { ultimoEnvio: new Date() },
         });
         console.log(`[SCHEDULER] Mensagem "${msg.nome}" enviada para ${msg.grupoNome}`);
+        
+        // Atraso de 2 segundos entre envios sucessivos
+        await new Promise((resolve) => setTimeout(resolve, 2000));
       } catch (e) {
         console.error(`[SCHEDULER] Erro ao enviar "${msg.nome}":`, e.message);
       }
@@ -82,6 +85,9 @@ async function verificarEEnviar() {
           data: { ultimoEnvio: new Date() },
         });
         console.log(`[SCHEDULER] Individual "${msg.nome}" enviada para ${msg.numero.nome || msg.numero.numero}`);
+        
+        // Atraso de 2 segundos entre envios sucessivos
+        await new Promise((resolve) => setTimeout(resolve, 2000));
       } catch (e) {
         console.error(`[SCHEDULER] Erro individual "${msg.nome}":`, e.message);
       }
@@ -92,8 +98,9 @@ async function verificarEEnviar() {
 }
 
 function iniciarScheduler() {
-  console.log('[SCHEDULER] Verificando mensagens automaticas a cada minuto...');
-  setInterval(verificarEEnviar, 60000);
+  console.log('[SCHEDULER] Verificando mensagens automaticas a cada 20 segundos...');
+  verificarEEnviar();
+  setInterval(verificarEEnviar, 20000);
 }
 
 module.exports = { iniciarScheduler };

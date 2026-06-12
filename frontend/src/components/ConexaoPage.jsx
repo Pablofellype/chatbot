@@ -14,6 +14,16 @@ export default function ConexaoPage() {
   const [apelidoNovo, setApelidoNovo] = useState('');
   const [editandoSenha, setEditandoSenha] = useState(null);
   const [novaSenha, setNovaSenha] = useState('');
+  const [modalConfig, setModalConfig] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    value: '',
+    placeholder: '',
+    showInput: true,
+    onConfirm: null,
+    onCancel: null
+  });
 
   const carregar = async () => {
     try {
@@ -29,41 +39,160 @@ export default function ConexaoPage() {
     return () => clearInterval(interval);
   }, []);
 
+  const abrirConfirmModal = (titulo, mensagem, aoConfirmar) => {
+    setModalConfig({
+      isOpen: true,
+      title: titulo,
+      message: mensagem,
+      value: '',
+      showInput: false,
+      onConfirm: () => {
+        setModalConfig((prev) => ({ ...prev, isOpen: false }));
+        aoConfirmar();
+      },
+      onCancel: () => {}
+    });
+  };
+
+  const abrirPromptModal = (titulo, message, aoConfirmar) => {
+    setModalConfig({
+      isOpen: true,
+      title: titulo,
+      message: message,
+      value: '',
+      placeholder: 'Digite a senha...',
+      showInput: true,
+      onConfirm: (val) => {
+        setModalConfig((prev) => ({ ...prev, isOpen: false }));
+        aoConfirmar(val);
+      },
+      onCancel: () => {}
+    });
+  };
+
+  const mostrarAlerta = (titulo, mensagem) => {
+    setModalConfig({
+      isOpen: true,
+      title: titulo,
+      message: mensagem,
+      value: '',
+      showInput: false,
+      onConfirm: () => {
+        setModalConfig((prev) => ({ ...prev, isOpen: false }));
+      },
+      onCancel: () => {},
+      isAlert: true
+    });
+  };
+
   const handleCriar = async () => {
     if (!novoNome.trim()) return;
-    setCriando(true);
-    try {
-      await conexaoService.criar({ nome: novoNome.trim() });
-      setNovoNome('');
-      carregar();
-    } catch (e) { console.error(e); }
-    finally { setCriando(false); }
+    
+    abrirPromptModal(
+      'Nova Conexão',
+      'Defina uma senha de segurança para esta nova conexão:',
+      async (senha) => {
+        if (!senha.trim()) {
+          mostrarAlerta('Erro', 'A senha de segurança é obrigatória.');
+          return;
+        }
+
+        setCriando(true);
+        try {
+          await conexaoService.criar({ nome: novoNome.trim(), senha: senha.trim() });
+          setNovoNome('');
+          carregar();
+        } catch (e) { 
+          console.error(e);
+          mostrarAlerta('Erro', 'Erro ao criar conexão.');
+        }
+        finally { setCriando(false); }
+      }
+    );
   };
 
   const handleAdicionarNumero = async (nomeSetor) => {
-    try {
-      await conexaoService.criar({ nome: nomeSetor, apelido: apelidoNovo.trim() || null });
-      setAdicionandoNumero(null);
-      setApelidoNovo('');
-      carregar();
-    } catch (e) { console.error(e); }
+    abrirPromptModal(
+      'Novo Número',
+      'Defina uma senha de segurança para esta nova conexão:',
+      async (senha) => {
+        if (!senha.trim()) {
+          mostrarAlerta('Erro', 'A senha de segurança é obrigatória.');
+          return;
+        }
+
+        try {
+          await conexaoService.criar({ 
+            nome: nomeSetor, 
+            apelido: apelidoNovo.trim() || null,
+            senha: senha.trim()
+          });
+          setAdicionandoNumero(null);
+          setApelidoNovo('');
+          carregar();
+        } catch (e) { 
+          console.error(e);
+          mostrarAlerta('Erro', 'Erro ao criar conexão.');
+        }
+      }
+    );
   };
 
   const handleLogout = async (id) => {
-    if (!confirm('Desconectar este WhatsApp?')) return;
-    await conexaoService.logout(id);
-    carregar();
+    abrirConfirmModal(
+      'Desconectar WhatsApp',
+      'Tem certeza que deseja desconectar a sessão deste WhatsApp?',
+      async () => {
+        try {
+          await conexaoService.logout(id);
+          carregar();
+        } catch (error) {
+          console.error(error);
+          mostrarAlerta('Erro', 'Erro ao desconectar o WhatsApp.');
+        }
+      }
+    );
   };
 
   const handleReconectar = async (id) => {
-    await conexaoService.reconectar(id);
-    carregar();
+    try {
+      await conexaoService.reconectar(id);
+      carregar();
+    } catch (error) {
+      console.error(error);
+      mostrarAlerta('Erro', 'Erro ao solicitar reconexão.');
+    }
   };
 
-  const handleDeletar = async (id) => {
-    if (!confirm('Remover esta conexao?')) return;
-    await conexaoService.deletar(id);
-    carregar();
+  const handleDeletar = async (conexao) => {
+    const deletarAcao = async (senha = '') => {
+      try {
+        await conexaoService.deletar(conexao.id, senha);
+        carregar();
+      } catch (error) {
+        console.error(error);
+        const msgErro = error.response?.data?.erro || 'Não foi possível remover a conexão.';
+        mostrarAlerta('Erro', `Erro: ${msgErro}`);
+      }
+    };
+
+    if (conexao.senha) {
+      abrirPromptModal(
+        'Remover Conexão',
+        'Esta conexão é protegida por senha. Digite a senha para confirmar a remoção permanente:',
+        (senhaDigitada) => {
+          deletarAcao(senhaDigitada);
+        }
+      );
+    } else {
+      abrirConfirmModal(
+        'Remover Conexão',
+        'Tem certeza que deseja remover esta conexão permanentemente?',
+        () => {
+          deletarAcao();
+        }
+      );
+    }
   };
 
   const salvarNome = async (setor, novoNome) => {
@@ -204,7 +333,7 @@ export default function ConexaoPage() {
                           ) : (
                             <button onClick={() => handleReconectar(conexao.id)} className="btn btn-dark btn-sm">Reconectar</button>
                           )}
-                          <button onClick={() => handleDeletar(conexao.id)} className="btn btn-danger btn-sm">Remover</button>
+                          <button onClick={() => handleDeletar(conexao)} className="btn btn-danger btn-sm">Remover</button>
                           <button onClick={() => { setEditandoSenha(editandoSenha === conexao.id ? null : conexao.id); setNovaSenha(''); }} className={`${conexao.senha ? 'badge badge-success cursor-pointer' : 'btn btn-ghost btn-sm'}`}>
                             {conexao.senha ? 'Senha ativa' : 'Definir senha'}
                           </button>
@@ -238,16 +367,18 @@ export default function ConexaoPage() {
                           <h4 className="text-xs font-bold text-[var(--text-primary)] mb-1">Passo 2: Escaneie o QR Code</h4>
                           <p className="text-[var(--text-muted)] text-[10px] mb-4">Abra o WhatsApp no celular → Aparelhos conectados → Conectar aparelho</p>
                           
-                          <div className="relative inline-block card p-3 bg-white border border-[var(--border)] shadow-md overflow-hidden group rounded-xl">
-                            {/* Linha laser piscante */}
-                            <div className="absolute left-0 top-0 w-full h-[2px] bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)] animate-bounce" style={{ animationDuration: '3s' }} />
+                          <div className="flex flex-col items-center justify-center gap-4">
+                            <div className="relative card p-3 bg-white border border-[var(--border)] shadow-md overflow-hidden group rounded-xl w-fit">
+                              {/* Linha laser piscante */}
+                              <div className="absolute left-0 top-0 w-full h-[2px] bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)] animate-bounce" style={{ animationDuration: '3s' }} />
+                              
+                              <img src={conexao.status.qrCode} alt="QR Code" className="w-44 h-44 relative z-10 transition-transform duration-200 group-hover:scale-[1.02]" />
+                            </div>
                             
-                            <img src={conexao.status.qrCode} alt="QR Code" className="w-44 h-44 relative z-10 transition-transform duration-200 group-hover:scale-[1.02]" />
-                          </div>
-                          
-                          <div className="flex items-center justify-center gap-2 mt-4 text-[11px] text-[var(--text-secondary)] font-medium bg-[var(--surface)] border border-[var(--border)] py-1.5 px-3 rounded-lg inline-flex">
-                            <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-                            Aguardando leitura do celular...
+                            <div className="flex items-center justify-center gap-2 text-[11px] text-[var(--text-secondary)] font-medium bg-[var(--surface)] border border-[var(--border)] py-1.5 px-3 rounded-lg w-fit">
+                              <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                              Aguardando leitura do celular...
+                            </div>
                           </div>
                         </div>
                       )}
@@ -329,6 +460,54 @@ export default function ConexaoPage() {
               )}
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Custom Modal (Visual Brasal Premium) */}
+      {modalConfig.isOpen && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
+          <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-6 w-full max-w-sm shadow-2xl animate-fadeInScale">
+            <h3 className="text-base font-bold text-[var(--text-primary)] font-display mb-2">{modalConfig.title}</h3>
+            <p className="text-xs text-[var(--text-secondary)] mb-4">{modalConfig.message}</p>
+            
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              modalConfig.onConfirm(modalConfig.value);
+            }}>
+              {modalConfig.showInput && (
+                <input
+                  type="password"
+                  value={modalConfig.value}
+                  onChange={(e) => setModalConfig({ ...modalConfig, value: e.target.value })}
+                  placeholder={modalConfig.placeholder}
+                  autoFocus
+                  className="input mb-5"
+                  required
+                />
+              )}
+              
+              <div className="flex justify-end gap-3">
+                {!modalConfig.isAlert && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setModalConfig({ ...modalConfig, isOpen: false });
+                      if (modalConfig.onCancel) modalConfig.onCancel();
+                    }}
+                    className="btn btn-ghost btn-sm"
+                  >
+                    Cancelar
+                  </button>
+                )}
+                <button
+                  type="submit"
+                  className="btn btn-primary btn-sm"
+                >
+                  Confirmar
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
     </div>

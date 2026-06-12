@@ -5,6 +5,22 @@ import MediaUploader from './MediaUploader';
 const formVazio = { nome: '', mensagem: '', tipo: 'texto', mediaUrl: '', frequencia: 'uma_vez', diasSemana: '', horario: '', numeroId: '', conexaoId: '' };
 const diasSemanaOpts = ['seg', 'ter', 'qua', 'qui', 'sex', 'sab', 'dom'];
 
+const API_URL = import.meta.env.VITE_API_URL || '/api';
+
+const getMediaSrc = (url) => {
+  if (!url) return '';
+  let cleanUrl = url.replace(/\\/g, '/');
+  if (!cleanUrl.startsWith('/') && !cleanUrl.startsWith('http')) {
+    cleanUrl = '/' + cleanUrl;
+  }
+  if (cleanUrl.startsWith('/uploads/')) {
+    if (API_URL === '/api') return cleanUrl;
+    const baseUrl = API_URL.endsWith('/api') ? API_URL.slice(0, -4) : API_URL;
+    return `${baseUrl}${cleanUrl}`;
+  }
+  return url;
+};
+
 function formatarNumero(num) {
   if (!num) return '';
   const d = num.replace(/\D/g, '');
@@ -22,6 +38,33 @@ export default function MensagensIndividuaisPage() {
   const [form, setForm] = useState(formVazio);
   const [editandoId, setEditandoId] = useState(null);
   const [mostrarForm, setMostrarForm] = useState(false);
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    type: 'confirm', // 'confirm' or 'alert'
+    onConfirm: null
+  });
+
+  const mostrarAlerta = (titulo, mensagem) => {
+    setConfirmModal({
+      isOpen: true,
+      title: titulo,
+      message: mensagem,
+      type: 'alert',
+      onConfirm: null
+    });
+  };
+
+  const mostrarConfirmacao = (titulo, mensagem, aoConfirmar) => {
+    setConfirmModal({
+      isOpen: true,
+      title: titulo,
+      message: mensagem,
+      type: 'confirm',
+      onConfirm: aoConfirmar
+    });
+  };
 
   // Navegação: setor → conexão
   const [selectedSetor, setSelectedSetor] = useState(null);
@@ -49,6 +92,7 @@ export default function MensagensIndividuaisPage() {
   const [buscaContato, setBuscaContato] = useState('');
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [fotosContatos, setFotosContatos] = useState({});
+  const [contatosExpandidos, setContatosExpandidos] = useState({});
 
   useEffect(() => {
     if (contatosWhatsApp.length > 0 && selectedConexao) {
@@ -70,6 +114,7 @@ export default function MensagensIndividuaisPage() {
       fetchPhotos();
     }
   }, [contatosWhatsApp, selectedConexao]);
+
 
   const carregar = async () => {
     try {
@@ -122,6 +167,26 @@ export default function MensagensIndividuaisPage() {
     ? mensagens.filter(m => m.conexaoId === selectedConexao.id)
     : [];
 
+  useEffect(() => {
+    if (msgsDaConexao.length > 0 && selectedConexao) {
+      const fetchScheduledContactPhotos = async () => {
+        const uniqueNums = [...new Set(msgsDaConexao.map(m => m.numero?.numero).filter(Boolean))];
+        for (const num of uniqueNums) {
+          if (fotosContatos[num]) continue;
+          try {
+            const res = await conexaoService.fotoContato(selectedConexao.id, num);
+            if (res.data?.fotoUrl) {
+              setFotosContatos(prev => ({ ...prev, [num]: res.data.fotoUrl }));
+            }
+          } catch (e) {
+            // ignore error
+          }
+        }
+      };
+      fetchScheduledContactPhotos();
+    }
+  }, [msgsDaConexao, selectedConexao]);
+
   const handleSelecionarConexao = (conexao) => {
     if (conexao.senha && !desbloqueadas.includes(conexao.id)) {
       setSenhaPrompt(conexao);
@@ -159,7 +224,7 @@ export default function MensagensIndividuaisPage() {
 
     if (digitarManualmente) {
       if (!numeroManual) {
-        alert('Por favor, informe o número de telefone.');
+        mostrarAlerta('Campos Obrigatórios', 'Por favor, informe o número de telefone.');
         return;
       }
       try {
@@ -175,7 +240,7 @@ export default function MensagensIndividuaisPage() {
         // Atualiza a lista localmente
         await carregar();
       } catch (err) {
-        alert(err.response?.data?.erro || 'Erro ao registrar número manual');
+        mostrarAlerta('Erro', err.response?.data?.erro || 'Erro ao registrar número manual');
         return;
       }
     } else if (String(targetNumeroId).startsWith('wa-')) {
@@ -194,7 +259,7 @@ export default function MensagensIndividuaisPage() {
         // Atualiza a lista de números autorizados localmente
         await carregar();
       } catch (err) {
-        alert(err.response?.data?.erro || 'Erro ao registrar contato no banco');
+        mostrarAlerta('Erro', err.response?.data?.erro || 'Erro ao registrar contato no banco');
         return;
       }
     }
@@ -212,7 +277,7 @@ export default function MensagensIndividuaisPage() {
       setForm(formVazio); setEditandoId(null); setMostrarForm(false);
       setDigitarManualmente(false); setNumeroManual(''); setNomeManual(''); setBuscaContato('');
       carregar();
-    } catch (error) { alert(error.response?.data?.erro || 'Erro'); }
+    } catch (error) { mostrarAlerta('Erro', error.response?.data?.erro || 'Erro'); }
   };
 
   const handleEditar = (msg) => {
@@ -227,18 +292,41 @@ export default function MensagensIndividuaisPage() {
     setMostrarForm(true);
   };
 
-  const handleDeletar = async (id) => {
-    if (!confirm('Remover agendamento?')) return;
-    await mensagemIndividualService.deletar(id); carregar();
+  const handleDeletar = (id) => {
+    mostrarConfirmacao('Remover Agendamento', 'Tem certeza que deseja remover este agendamento permanentemente?', async () => {
+      try {
+        await mensagemIndividualService.deletar(id);
+        carregar();
+      } catch (error) {
+        console.error(error);
+        mostrarAlerta('Erro', 'Erro ao remover agendamento.');
+      }
+    });
   };
 
   const handleEnviar = async (id) => {
-    try { await mensagemIndividualService.enviar(id); carregar(); }
-    catch (e) { alert('Erro: ' + (e.response?.data?.erro || e.message)); }
+    try {
+      await mensagemIndividualService.enviar(id);
+      carregar();
+    } catch (e) {
+      mostrarAlerta('Erro ao Enviar', 'Erro: ' + (e.response?.data?.erro || e.message));
+    }
   };
 
   const handleToggle = async (msg) => {
     await mensagemIndividualService.atualizar(msg.id, { ativo: !msg.ativo }); carregar();
+  };
+
+  const handleNovaMensagemParaContato = (grupo) => {
+    setForm({
+      ...formVazio,
+      conexaoId: String(selectedConexao.id),
+      numeroId: String(grupo.numeroId)
+    });
+    setEditandoId(null);
+    setMostrarForm(true);
+    setDigitarManualmente(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const cancelar = () => { 
@@ -553,41 +641,204 @@ export default function MensagensIndividuaisPage() {
           </form>
         )}
 
-        {/* Lista de mensagens */}
+        {/* Lista de mensagens agrupadas por contato */}
         {msgsDaConexao.length === 0 && !mostrarForm ? (
           <div className="text-center py-16">
             <div className="w-14 h-14 bg-[var(--surface-sunken)] rounded-2xl flex items-center justify-center mx-auto mb-3">
               <svg className="w-6 h-6 text-[var(--text-muted)]" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
             </div>
             <p className="text-[var(--text-secondary)] font-medium">Nenhum agendamento</p>
-            <p className="text-[var(--text-muted)] text-sm mt-1">Crie mensagens programadas para este numero</p>
+            <p className="text-[var(--text-muted)] text-sm mt-1">Crie mensagens programadas para este número</p>
           </div>
         ) : (
-          <div className="space-y-2 stagger">
-            {msgsDaConexao.map(msg => (
-              <div key={msg.id} className="card px-5 py-4 flex items-center justify-between animate-fadeIn">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-sm font-semibold text-[var(--text-primary)]">{msg.nome}</span>
-                    <span className={`badge ${msg.ativo ? 'badge-success' : 'badge-neutral'}`}>
-                      {msg.ativo ? 'Ativo' : 'Inativo'}
-                    </span>
-                    <span className="text-[10px] text-[var(--text-muted)]">{msg.horario} | {msg.frequencia === 'uma_vez' ? 'Uma vez' : msg.frequencia === 'diario' ? 'Diario' : `Semanal (${msg.diasSemana})`}</span>
-                  </div>
-                  <p className="text-xs text-[var(--text-secondary)] truncate">{msg.mensagem}</p>
-                  <div className="flex items-center gap-3 mt-1">
-                    <span className="text-[10px] text-[var(--text-muted)]">Para: {msg.numero?.nome || formatarNumero(msg.numero?.numero)}</span>
-                    {msg.ultimoEnvio && <span className="text-[10px] text-[var(--text-muted)]">Enviado: {new Date(msg.ultimoEnvio).toLocaleString('pt-BR')}</span>}
-                  </div>
-                </div>
-                <div className="flex gap-1.5 shrink-0 ml-4">
-                  <button onClick={() => handleEnviar(msg.id)} className="btn btn-sm text-[var(--brand)] border border-[var(--brand-light)] hover:bg-[var(--brand-light)]">Enviar</button>
-                  <button onClick={() => handleEditar(msg)} className="btn btn-ghost btn-sm">Editar</button>
-                  <button onClick={() => handleToggle(msg)} className="btn btn-ghost btn-sm">{msg.ativo ? 'Off' : 'On'}</button>
-                  <button onClick={() => handleDeletar(msg.id)} className="btn btn-danger btn-sm">X</button>
-                </div>
+          (() => {
+            // Agrupar mensagens por contato
+            const contatosComMensagens = [];
+            
+            msgsDaConexao.forEach(msg => {
+              const num = msg.numero?.numero || 'sem-numero';
+              const nome = msg.numero?.nome || 'Sem nome';
+              const foto = msg.numero?.fotoUrl || fotosContatos[num];
+              
+              let grupo = contatosComMensagens.find(g => g.numero === num);
+              if (!grupo) {
+                grupo = {
+                  numero: num,
+                  nome: nome,
+                  fotoUrl: foto,
+                  numeroId: msg.numeroId,
+                  mensagens: []
+                };
+                contatosComMensagens.push(grupo);
+              }
+              grupo.mensagens.push(msg);
+            });
+
+            return (
+              <div className="space-y-6 stagger">
+                {contatosComMensagens.map(grupo => {
+                  const isExpanded = contatosExpandidos[grupo.numero] !== undefined
+                    ? contatosExpandidos[grupo.numero]
+                    : contatosComMensagens.length === 1;
+
+                  return (
+                    <div key={grupo.numero} className="card border border-[var(--border)] shadow-sm bg-[var(--surface)] animate-fadeIn overflow-hidden">
+                      {/* Cabeçalho do Contato com Foto de Perfil */}
+                      <div 
+                        onClick={() => setContatosExpandidos(prev => ({ ...prev, [grupo.numero]: !isExpanded }))}
+                        className="flex items-center gap-4 p-6 border-b border-[var(--border-light)] cursor-pointer hover:bg-[var(--surface-sunken)] transition-colors select-none"
+                      >
+                        {/* Foto de Perfil */}
+                        <div className="relative shrink-0">
+                          {grupo.fotoUrl ? (
+                            <img
+                              src={grupo.fotoUrl}
+                              alt={grupo.nome}
+                              className="w-14 h-14 rounded-full object-cover border border-[var(--border)] shadow-sm"
+                            />
+                          ) : (
+                            <div className="w-14 h-14 rounded-full bg-[var(--brand-light)] text-[var(--brand)] flex items-center justify-center font-bold text-lg border-2 border-[var(--brand)] shadow-sm">
+                              {grupo.nome.charAt(0).toUpperCase()}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Informações do Contato */}
+                        <div>
+                          <h3 className="text-base font-bold text-[var(--text-primary)] leading-tight">
+                            {grupo.nome}
+                          </h3>
+                          <p className="text-xs text-[var(--text-muted)] mt-1">
+                            {formatarNumero(grupo.numero)}
+                          </p>
+                        </div>
+                        
+                        {/* Botões do lado direito do cabeçalho */}
+                        <div className="ml-auto flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleNovaMensagemParaContato(grupo); }}
+                            className="btn btn-ghost btn-sm text-[#F40009] border-[#F40009]/20 hover:bg-[var(--brand-light)] font-bold text-xs cursor-pointer active:scale-95"
+                            title="Adicionar agendamento para este contato"
+                          >
+                            + Novo Agendamento
+                          </button>
+                          <div 
+                            onClick={() => setContatosExpandidos(prev => ({ ...prev, [grupo.numero]: !isExpanded }))}
+                            className="bg-[var(--surface-sunken)] border border-[var(--border)] text-[var(--text-secondary)] text-xs font-bold px-3 py-1.5 rounded-full shrink-0 flex items-center gap-1.5 cursor-pointer hover:border-[var(--brand)] transition-colors"
+                          >
+                            {grupo.mensagens.length} agendamento(s)
+                            <svg className={`w-3.5 h-3.5 text-[var(--text-muted)] transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                            </svg>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Sublista de Mensagens */}
+                      {isExpanded && (
+                        <div className="p-6 pt-4 space-y-3.5 animate-fadeIn">
+                          {grupo.mensagens.map(msg => (
+                            <div key={msg.id} className="bg-[var(--surface-sunken)] border border-[var(--border-light)] rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all hover:border-[var(--border)]">
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center flex-wrap gap-2 mb-1.5">
+                                  <span className="text-sm font-bold text-[var(--text-primary)]">{msg.nome}</span>
+                                  
+                                  <span className={`badge cursor-pointer ${msg.ativo ? 'badge-success' : 'badge-neutral'}`} onClick={() => handleToggle(msg)}>
+                                    <span className={`w-1.5 h-1.5 rounded-full ${msg.ativo ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
+                                    {msg.ativo ? 'Ativo' : 'Inativo'}
+                                  </span>
+                                  
+                                  <span className="text-[10px] font-semibold text-[var(--text-muted)] bg-[var(--surface)] px-2 py-0.5 rounded border border-[var(--border)]">
+                                    {msg.horario} | {msg.frequencia === 'uma_vez' ? 'Uma vez' : msg.frequencia === 'diario' ? 'Diário' : `Semanal (${msg.diasSemana})`}
+                                  </span>
+                                </div>
+                                
+                                <p className="text-xs text-[var(--text-secondary)] bg-[var(--surface)] p-3 rounded-lg border border-[var(--border-light)] font-medium leading-relaxed mb-2 whitespace-pre-line">
+                                  {msg.mensagem}
+                                </p>
+                                
+                                {msg.mediaUrl && (
+                                  <div className="mt-2 mb-3 max-w-[240px] border border-[var(--border-light)] rounded-xl overflow-hidden bg-[var(--surface)] p-1.5 shadow-sm">
+                                    {msg.tipo === 'imagem' ? (
+                                      <img
+                                        src={getMediaSrc(msg.mediaUrl)}
+                                        alt="Anexo agendado"
+                                        className="max-h-32 w-auto object-contain rounded-lg mx-auto"
+                                      />
+                                    ) : msg.tipo === 'video' ? (
+                                      <video
+                                        src={getMediaSrc(msg.mediaUrl)}
+                                        controls
+                                        className="max-h-32 w-auto object-contain rounded-lg mx-auto"
+                                      />
+                                    ) : (
+                                      <a href={getMediaSrc(msg.mediaUrl)} target="_blank" rel="noreferrer" className="text-[11px] text-blue-500 font-semibold underline truncate block p-1">
+                                        📂 {msg.mediaUrl.split('/').pop()}
+                                      </a>
+                                    )}
+                                  </div>
+                                )}
+                                
+                                {msg.ultimoEnvio && (
+                                  <div className="flex items-center gap-1.5 text-[10px] text-[var(--text-muted)] font-semibold">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                    Último envio: {new Date(msg.ultimoEnvio).toLocaleString('pt-BR')}
+                                  </div>
+                                )}
+                              </div>
+                              
+                              {/* Botões de Ação */}
+                              <div className="flex gap-2 shrink-0 md:self-center">
+                                <button onClick={() => handleEnviar(msg.id)} className="btn btn-sm btn-primary">
+                                  Enviar agora
+                                </button>
+                                <button onClick={() => handleEditar(msg)} className="btn btn-ghost btn-sm">
+                                  Editar
+                                </button>
+                                <button onClick={() => handleDeletar(msg.id)} className="btn btn-danger btn-sm text-red-500">
+                                  Excluir
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
-            ))}
+            );
+          })()
+        )}
+        {/* Modal de Confirmação customizado (Estilo Brasal) */}
+        {confirmModal.isOpen && (
+          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
+            <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-6 w-full max-w-sm shadow-2xl animate-fadeInScale">
+              <h3 className="text-base font-bold text-[var(--text-primary)] font-display mb-2">{confirmModal.title}</h3>
+              <p className="text-xs text-[var(--text-secondary)] mb-6">{confirmModal.message}</p>
+              
+              <div className="flex justify-end gap-3">
+                {confirmModal.type === 'confirm' && (
+                  <button
+                    type="button"
+                    onClick={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+                    className="btn btn-ghost btn-sm"
+                  >
+                    Cancelar
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setConfirmModal((prev) => ({ ...prev, isOpen: false }));
+                    if (confirmModal.onConfirm) confirmModal.onConfirm();
+                  }}
+                  className="btn btn-primary btn-sm"
+                >
+                  Confirmar
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>
@@ -664,6 +915,37 @@ export default function MensagensIndividuaisPage() {
             </form>
           </div>
         )}
+        {/* Modal de Confirmação customizado (Estilo Brasal) */}
+        {confirmModal.isOpen && (
+          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
+            <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-6 w-full max-w-sm shadow-2xl animate-fadeInScale">
+              <h3 className="text-base font-bold text-[var(--text-primary)] font-display mb-2">{confirmModal.title}</h3>
+              <p className="text-xs text-[var(--text-secondary)] mb-6">{confirmModal.message}</p>
+              
+              <div className="flex justify-end gap-3">
+                {confirmModal.type === 'confirm' && (
+                  <button
+                    type="button"
+                    onClick={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+                    className="btn btn-ghost btn-sm"
+                  >
+                    Cancelar
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setConfirmModal((prev) => ({ ...prev, isOpen: false }));
+                    if (confirmModal.onConfirm) confirmModal.onConfirm();
+                  }}
+                  className="btn btn-primary btn-sm"
+                >
+                  Confirmar
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -726,6 +1008,38 @@ export default function MensagensIndividuaisPage() {
               </button>
             );
           })}
+        </div>
+      )}
+
+      {/* Modal de Confirmação customizado (Estilo Brasal) */}
+      {confirmModal.isOpen && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
+          <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-6 w-full max-w-sm shadow-2xl animate-fadeInScale">
+            <h3 className="text-base font-bold text-[var(--text-primary)] font-display mb-2">{confirmModal.title}</h3>
+            <p className="text-xs text-[var(--text-secondary)] mb-6">{confirmModal.message}</p>
+            
+            <div className="flex justify-end gap-3">
+              {confirmModal.type === 'confirm' && (
+                <button
+                  type="button"
+                  onClick={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+                  className="btn btn-ghost btn-sm"
+                >
+                  Cancelar
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => {
+                  setConfirmModal((prev) => ({ ...prev, isOpen: false }));
+                  if (confirmModal.onConfirm) confirmModal.onConfirm();
+                }}
+                className="btn btn-primary btn-sm"
+              >
+                Confirmar
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

@@ -45,6 +45,8 @@ const criar = async (req, res) => {
 const atualizar = async (req, res) => {
   try {
     const { nome, mensagem, tipo, mediaUrl, grupoId, grupoNome, conexaoId, frequencia, diasSemana, horario, ativo } = req.body;
+    const resetUltimoEnvio = mensagem !== undefined || mediaUrl !== undefined || horario !== undefined || frequencia !== undefined || diasSemana !== undefined || ativo !== undefined || tipo !== undefined;
+
     const msg = await prisma.mensagemAutomatica.update({
       where: { id: parseInt(req.params.id) },
       data: {
@@ -59,6 +61,7 @@ const atualizar = async (req, res) => {
         ...(diasSemana !== undefined && { diasSemana }),
         ...(horario !== undefined && { horario }),
         ...(ativo !== undefined && { ativo }),
+        ...(resetUltimoEnvio && { ultimoEnvio: null }),
       },
       include: { conexao: { select: { id: true, nome: true } } },
     });

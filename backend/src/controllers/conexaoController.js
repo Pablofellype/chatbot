@@ -32,16 +32,24 @@ const listar = async (req, res) => {
 
 const criar = async (req, res) => {
   try {
-    const { nome, apelido } = req.body;
-    if (!nome) return res.status(400).json({ erro: 'nome obrigatório' });
+    const { nome, apelido, senha } = req.body;
+    if (!nome) return res.status(400).json({ erro: 'Nome é obrigatório.' });
+    if (!senha) return res.status(400).json({ erro: 'Senha de segurança é obrigatória.' });
 
-    const conexao = await prisma.conexao.create({ data: { nome, apelido: apelido || null } });
+    const conexao = await prisma.conexao.create({ 
+      data: { 
+        nome, 
+        apelido: apelido || null,
+        senha: senha
+      } 
+    });
     // Inicia o client WhatsApp para esta conexão
     iniciarConexao(conexao.id);
 
     res.status(201).json(conexao);
   } catch (error) {
-    res.status(500).json({ erro: 'Erro ao criar conexão' });
+    console.error('[ERRO CRIAR CONEXAO]', error);
+    res.status(500).json({ erro: 'Erro ao criar conexão.' });
   }
 };
 
@@ -81,16 +89,39 @@ const atualizar = async (req, res) => {
 const deletar = async (req, res) => {
   try {
     const id = parseInt(req.params.id);
-    // Remove fluxos vinculados desta conexão (desvincula)
+    const { senha } = req.body;
+
+    const conexao = await prisma.conexao.findUnique({ where: { id } });
+    if (!conexao) return res.status(404).json({ erro: 'Conexão não encontrada' });
+
+    if (conexao.senha && conexao.senha !== senha) {
+      return res.status(401).json({ erro: 'Senha de segurança incorreta. Remoção não autorizada.' });
+    }
+    
+    // 1. Remove fluxos vinculados desta conexão (desvincula)
     await prisma.fluxo.updateMany({ where: { conexaoId: id }, data: { conexaoId: null } });
-    // Remove conversas desta conexão
+    
+    // 2. Remove conversas desta conexão
     await prisma.conversa.deleteMany({ where: { conexaoId: id } });
-    // Destroi o client
+    
+    // 3. Remove mensagens automáticas vinculadas
+    await prisma.mensagemAutomatica.deleteMany({ where: { conexaoId: id } });
+    
+    // 4. Remove mensagens individuais vinculadas
+    await prisma.mensagemIndividual.deleteMany({ where: { conexaoId: id } });
+    
+    // 5. Desvincula números autorizados (responsáveis)
+    await prisma.numeroAutorizado.updateMany({ where: { conexaoId: id }, data: { conexaoId: null } });
+    
+    // 6. Destroi o client WhatsApp
     await destruirConexao(id);
-    // Remove do banco
+    
+    // 7. Remove do banco
     await prisma.conexao.delete({ where: { id } });
+    
     res.json({ mensagem: 'Conexão removida' });
   } catch (error) {
+    console.error('[ERRO AO DELETAR CONEXAO]', error);
     if (error.code === 'P2025') return res.status(404).json({ erro: 'Não encontrada' });
     res.status(500).json({ erro: 'Erro ao deletar' });
   }
