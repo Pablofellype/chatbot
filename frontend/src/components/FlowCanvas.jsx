@@ -233,31 +233,67 @@ function FlowEditor({ fluxo, conexoes = [], onSalvar, onVoltar }) {
   return (
     <div className="h-screen flex flex-col bg-slate-50">
       {/* Toolbar */}
-      <div className="border-b border-[var(--border)] glass px-5 py-3 flex items-center justify-between z-20">
-        <div className="flex items-center gap-3">
-          <button onClick={onVoltar} className="btn btn-ghost btn-sm">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg>
+      <div className="border-b border-[var(--border)] bg-[var(--surface)] px-6 py-3 flex items-center justify-between z-20 shadow-xs">
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={onVoltar} 
+            className="w-8 h-8 rounded-lg hover:bg-[var(--border-light)] flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all cursor-pointer active:scale-95"
+            title="Voltar para a lista"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+            </svg>
           </button>
-          <div className="w-px h-5 bg-[var(--border)]" />
-          <span className="text-[var(--text-primary)] font-bold text-sm tracking-tight">{nome || 'Novo Fluxo'}</span>
-          {conexaoSelecionada && (
-            <span className="badge badge-neutral">
-              {conexaoSelecionada.nome}
+          
+          <div className="w-px h-5 bg-[var(--border)] shrink-0" />
+          
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="text-[14px] font-extrabold text-[var(--text-primary)] tracking-tight truncate max-w-[180px] font-display">
+              {nome || 'Novo Fluxo'}
             </span>
-          )}
-          <div className="w-px h-5 bg-[var(--border)]" />
+            {conexaoSelecionada && (
+              <span className="badge badge-neutral text-[10px] font-extrabold px-2 py-0.5 rounded bg-[var(--surface-sunken)] border border-[var(--border)] text-[var(--text-secondary)]">
+                📞 {conexaoSelecionada.apelido || conexaoSelecionada.nome}
+              </span>
+            )}
+            {/* Cog Settings Button */}
+            <button 
+              onClick={() => setMostrarConfig(!mostrarConfig)} 
+              className={`w-7 h-7 rounded-md flex items-center justify-center transition-all cursor-pointer border ${
+                mostrarConfig 
+                  ? 'bg-[#F40009]/10 text-[#F40009] border-[#F40009]/20' 
+                  : 'text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-sunken)] border-transparent'
+              }`}
+              title="Configurações do Fluxo"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            </button>
+          </div>
+          
+          <div className="w-px h-5 bg-[var(--border)] shrink-0" />
 
           {/* Abas */}
-          <div className="flex bg-[var(--surface-sunken)] rounded-lg p-[3px]">
+          <div className="flex bg-[var(--surface-sunken)] rounded-lg p-[3px] border border-[var(--border)] shrink-0">
             <button
               onClick={() => setAbaAtiva('fluxo')}
-              className={`text-xs px-3.5 py-1.5 rounded-md cursor-pointer transition-all font-semibold ${abaAtiva === 'fluxo' ? 'bg-white text-[var(--text-primary)] shadow-sm' : 'text-[var(--text-muted)] hover:text-[var(--text-secondary)]'}`}
+              className={`text-xs px-4 py-1.5 rounded-md cursor-pointer transition-all font-bold ${
+                abaAtiva === 'fluxo' 
+                  ? 'bg-white dark:bg-slate-800 text-[var(--text-primary)] shadow-xs border border-[var(--border)]' 
+                  : 'text-[var(--text-muted)] hover:text-[var(--text-secondary)]'
+              }`}
             >
               Fluxo
             </button>
             <button
               onClick={() => setAbaAtiva('automaticas')}
-              className={`text-xs px-3.5 py-1.5 rounded-md cursor-pointer transition-all font-semibold ${abaAtiva === 'automaticas' ? 'bg-white text-[var(--text-primary)] shadow-sm' : 'text-[var(--text-muted)] hover:text-[var(--text-secondary)]'}`}
+              className={`text-xs px-4 py-1.5 rounded-md cursor-pointer transition-all font-bold ${
+                abaAtiva === 'automaticas' 
+                  ? 'bg-white dark:bg-slate-800 text-[var(--text-primary)] shadow-xs border border-[var(--border)]' 
+                  : 'text-[var(--text-muted)] hover:text-[var(--text-secondary)]'
+              }`}
             >
               Msgs Auto
             </button>
@@ -265,40 +301,63 @@ function FlowEditor({ fluxo, conexoes = [], onSalvar, onVoltar }) {
         </div>
 
         {abaAtiva === 'fluxo' && (
-          <div className="flex items-center gap-2">
-            <button onClick={() => setMostrarConfig(!mostrarConfig)} className="btn btn-ghost btn-sm">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-            </button>
-            <button onClick={undo} title="Ctrl+Z" className="btn btn-ghost btn-sm">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" /></svg>
-            </button>
-            <button onClick={redo} title="Ctrl+Y" className="btn btn-ghost btn-sm">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M15 15l6-6m0 0l-6-6m6 6H9a6 6 0 000 12h3" /></svg>
-            </button>
-            <div className="w-px h-5 bg-[var(--border)]" />
+          <div className="flex items-center gap-2.5">
+            {/* Undo/Redo Group */}
+            <div className="flex items-center bg-[var(--surface-sunken)] border border-[var(--border)] rounded-lg p-0.5">
+              <button 
+                onClick={undo} 
+                title="Desfazer (Ctrl+Z)" 
+                className="w-7 h-7 rounded-md hover:bg-[var(--surface)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] flex items-center justify-center transition-all cursor-pointer active:scale-95"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" />
+                </svg>
+              </button>
+              <button 
+                onClick={redo} 
+                title="Refazer (Ctrl+Y)" 
+                className="w-7 h-7 rounded-md hover:bg-[var(--surface)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] flex items-center justify-center transition-all cursor-pointer active:scale-95"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 15l6-6m0 0l-6-6m6 6H9a6 6 0 000 12h3" />
+                </svg>
+              </button>
+            </div>
+            
+            <div className="w-px h-5 bg-[var(--border)] shrink-0" />
 
             {/* Dropdown Adicionar */}
             <div className="relative">
-              <button onClick={() => setMostrarAddMenu(!mostrarAddMenu)} className="btn btn-dark btn-sm">
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
-                Adicionar
+              <button 
+                onClick={() => setMostrarAddMenu(!mostrarAddMenu)} 
+                className="btn btn-dark btn-sm py-2.5 px-4 text-xs font-bold shadow-xs flex items-center gap-1.5"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg>
+                Adicionar Bloco
               </button>
               {mostrarAddMenu && (
                 <>
                   <div className="fixed inset-0 z-30" onClick={() => setMostrarAddMenu(false)} />
-                  <div className="absolute right-0 top-full mt-2 bg-white rounded-xl py-1.5 w-48 z-40 animate-fadeInScale" style={{ boxShadow: 'var(--shadow-xl)', border: '1px solid var(--border)' }}>
+                  <div className="absolute right-0 top-full mt-2 bg-[var(--surface)] rounded-xl py-1.5 w-48 z-40 animate-fadeInScale border border-[var(--border)] shadow-md">
+                    <p className="text-[9px] font-extrabold text-[var(--text-muted)] uppercase tracking-wider px-3.5 py-1">Tipos de Bloco</p>
                     {[
-                      { type: 'messageNode', label: 'Mensagem', color: '#3b82f6' },
-                      { type: 'menuNode', label: 'Menu', color: '#f59e0b' },
-                      { type: 'imageNode', label: 'Imagem', color: '#8b5cf6' },
-                      { type: 'videoNode', label: 'Video', color: '#ec4899' },
-                      { type: 'linkNode', label: 'Link', color: '#06b6d4' },
-                      { type: 'transferNode', label: 'Transferir', color: '#10b981' },
-                      { type: 'delayNode', label: 'Espera', color: '#f97316' },
+                      { type: 'messageNode', label: 'Mensagem', color: '#2563eb' },
+                      { type: 'menuNode', label: 'Menu de Opções', color: '#d97706' },
+                      { type: 'imageNode', label: 'Imagem', color: '#7c3aed' },
+                      { type: 'videoNode', label: 'Vídeo', color: '#db2777' },
+                      { type: 'linkNode', label: 'Link Web', color: '#0891b2' },
+                      { type: 'transferNode', label: 'Transferir Setor', color: '#059669' },
+                      { type: 'delayNode', label: 'Aguardar / Delay', color: '#ea580c' },
                     ].map(({ type, label, color }) => (
-                      <button key={type} onClick={() => { addNode(type); setMostrarAddMenu(false); }}
-                        className="w-full flex items-center gap-2.5 px-3.5 py-2 text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-sunken)] cursor-pointer transition-colors text-left font-medium rounded-lg mx-0.5" style={{ width: 'calc(100% - 4px)' }}>
-                        <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: color }} />
+                      <button 
+                        key={type} 
+                        onClick={() => { addNode(type); setMostrarAddMenu(false); }}
+                        className="w-full flex items-center gap-2.5 px-3.5 py-2 text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-sunken)] cursor-pointer transition-colors text-left font-semibold rounded-lg mx-0.5" 
+                        style={{ width: 'calc(100% - 4px)' }}
+                      >
+                        <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: color, boxShadow: `0 0 6px ${color}40` }} />
                         {label}
                       </button>
                     ))}
@@ -308,10 +367,26 @@ function FlowEditor({ fluxo, conexoes = [], onSalvar, onVoltar }) {
             </div>
 
             {selectedNode && selectedNode.type !== 'startNode' && (
-              <button onClick={deleteSelected} className="btn btn-danger btn-sm">Excluir</button>
+              <button 
+                onClick={deleteSelected} 
+                className="btn btn-danger btn-sm text-rose-600 font-bold px-3 hover:bg-rose-50 flex items-center gap-1 cursor-pointer border border-transparent hover:border-rose-100 rounded-lg py-1.5"
+                title="Excluir bloco selecionado"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.2} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                </svg>
+                Excluir
+              </button>
             )}
-            <div className="w-px h-5 bg-[var(--border)]" />
-            <button onClick={handleSalvar} className="btn btn-primary btn-md">Salvar</button>
+            
+            <div className="w-px h-5 bg-[var(--border)] shrink-0" />
+            
+            <button 
+              onClick={handleSalvar} 
+              className="btn btn-primary btn-md py-2.5 px-5 text-xs font-bold shadow-sm"
+            >
+              Salvar Fluxo
+            </button>
           </div>
         )}
       </div>
@@ -321,24 +396,82 @@ function FlowEditor({ fluxo, conexoes = [], onSalvar, onVoltar }) {
         <>
           {/* Config */}
           {mostrarConfig && (
-            <div className="border-b border-[var(--border)] bg-white px-5 py-4 z-10 animate-fadeIn">
-              <div className="max-w-5xl mx-auto grid grid-cols-5 gap-4">
-                <div><label className="label">Nome</label><input value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Atendimento" className="input" /></div>
-                <div><label className="label">Gatilhos</label><input value={gatilhos} onChange={(e) => setGatilhos(e.target.value)} placeholder="oi, menu" className="input" /></div>
-                <div>
-                  <label className="label">Conexao</label>
-                  <select value={conexaoId} onChange={(e) => setConexaoId(e.target.value)} className="input">
-                    <option value="">Selecione...</option>
-                    {conexoes.map((c) => (
-                      <option key={c.id} value={c.id}>{c.nome}</option>
-                    ))}
-                  </select>
+            <div className="border-b border-[var(--border)] bg-[var(--surface)] px-8 py-5 z-10 animate-slideDown shadow-xs relative">
+              <div className="max-w-5xl mx-auto">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#F40009]" />
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-[var(--text-secondary)]">Parâmetros Globais do Fluxo</h3>
+                  </div>
+                  <button onClick={() => setMostrarConfig(false)} className="text-[10px] font-bold text-[var(--text-muted)] hover:text-[#F40009] cursor-pointer flex items-center gap-1 transition-colors">
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    Fechar
+                  </button>
                 </div>
-                <div className="flex gap-2">
-                  <div><label className="label">Abre</label><input type="time" value={horarioInicio} onChange={(e) => setHorarioInicio(e.target.value)} className="input" /></div>
-                  <div><label className="label">Fecha</label><input type="time" value={horarioFim} onChange={(e) => setHorarioFim(e.target.value)} className="input" /></div>
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-5">
+                  <div className="flex flex-col">
+                    <label className="label">Nome do Fluxo</label>
+                    <input 
+                      value={nome} 
+                      onChange={(e) => setNome(e.target.value)} 
+                      placeholder="Ex: Boas-vindas" 
+                      className="input py-2 px-3 text-xs" 
+                    />
+                  </div>
+                  <div className="flex flex-col">
+                    <label className="label">Palavras Gatilho</label>
+                    <input 
+                      value={gatilhos} 
+                      onChange={(e) => setGatilhos(e.target.value)} 
+                      placeholder="Ex: oi, olá, menu" 
+                      className="input py-2 px-3 text-xs font-mono font-bold" 
+                    />
+                  </div>
+                  <div className="flex flex-col">
+                    <label className="label">Canal Associado</label>
+                    <select 
+                      value={conexaoId} 
+                      onChange={(e) => setConexaoId(e.target.value)} 
+                      className="input py-2 px-3 text-xs cursor-pointer font-bold appearance-none bg-[var(--surface-sunken)]"
+                    >
+                      <option value="">Selecione...</option>
+                      {conexoes.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          📞 {c.apelido || c.nome}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="flex flex-col">
+                    <label className="label">Horário Ativo (Início / Fim)</label>
+                    <div className="flex gap-2 items-center">
+                      <input 
+                        type="time" 
+                        value={horarioInicio} 
+                        onChange={(e) => setHorarioInicio(e.target.value)} 
+                        className="input py-2 px-2 text-xs flex-1 text-center font-bold" 
+                      />
+                      <span className="text-[var(--text-muted)] text-xs">—</span>
+                      <input 
+                        type="time" 
+                        value={horarioFim} 
+                        onChange={(e) => setHorarioFim(e.target.value)} 
+                        className="input py-2 px-2 text-xs flex-1 text-center font-bold" 
+                      />
+                    </div>
+                  </div>
+                  <div className="flex flex-col">
+                    <label className="label">Resposta fora do horário</label>
+                    <input 
+                      value={msgForaHorario} 
+                      onChange={(e) => setMsgForaHorario(e.target.value)} 
+                      placeholder="Ex: Estamos fechados agora..." 
+                      className="input py-2 px-3 text-xs" 
+                    />
+                  </div>
                 </div>
-                <div><label className="label">Msg fora horario</label><input value={msgForaHorario} onChange={(e) => setMsgForaHorario(e.target.value)} placeholder="Fechado..." className="input" /></div>
               </div>
             </div>
           )}

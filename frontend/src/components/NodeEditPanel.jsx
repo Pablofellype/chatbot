@@ -9,40 +9,40 @@ export default function NodeEditPanel({ node, onChange, onClose, onAddFrom }) {
 
   const inputClass = "input";
   const labelClass = "label";
-  const btnAddFrom = "btn btn-ghost btn-sm !text-[11px] !font-medium border border-[var(--border)]";
-
+  const btnAddFrom = "btn btn-ghost btn-sm !text-[11px] !font-bold border border-[var(--border)] py-1.5 px-2.5 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--surface-sunken)]";
+ 
   const renderCloseBtn = () => (
-    <button onClick={onClose} className="w-7 h-7 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-600 cursor-pointer transition-colors">
+    <button onClick={onClose} className="w-7 h-7 rounded-full hover:bg-[var(--border-light)] flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] cursor-pointer transition-colors">
       <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="3" y1="3" x2="11" y2="11"/><line x1="11" y1="3" x2="3" y2="11"/></svg>
     </button>
   );
-
+ 
   const renderHeader = (title, dotColor) => (
     <div className="px-5 py-4 border-b border-[var(--border-light)] flex items-center justify-between">
       <div className="flex items-center gap-2.5">
         <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: dotColor, boxShadow: `0 0 8px ${dotColor}30` }} />
-        <h3 className="text-[13px] font-bold text-[var(--text-primary)]">{title}</h3>
+        <h3 className="text-[13px] font-bold text-[var(--text-primary)] font-display">{title}</h3>
       </div>
       {renderCloseBtn()}
     </div>
   );
-
+ 
   const renderAddButtons = () => (
-    <div className="mt-4 pt-4 border-t border-slate-100">
-      <p className="text-xs font-medium text-slate-400 mb-2">Criar a partir deste node:</p>
+    <div className="mt-4 pt-4 border-t border-[var(--border-light)]">
+      <p className="text-xs font-bold text-[var(--text-muted)] mb-2.5 uppercase tracking-wider text-[10px]">Criar a partir deste node:</p>
       <div className="flex flex-wrap gap-1.5">
         <button onClick={() => onAddFrom(node, 'messageNode')} className={btnAddFrom}>+ Mensagem</button>
         <button onClick={() => onAddFrom(node, 'menuNode')} className={btnAddFrom}>+ Menu</button>
         <button onClick={() => onAddFrom(node, 'imageNode')} className={btnAddFrom}>+ Imagem</button>
-        <button onClick={() => onAddFrom(node, 'videoNode')} className={btnAddFrom}>+ Video</button>
+        <button onClick={() => onAddFrom(node, 'videoNode')} className={btnAddFrom}>+ Vídeo</button>
         <button onClick={() => onAddFrom(node, 'linkNode')} className={btnAddFrom}>+ Link</button>
         <button onClick={() => onAddFrom(node, 'transferNode')} className={btnAddFrom}>+ Transferir</button>
         <button onClick={() => onAddFrom(node, 'delayNode')} className={btnAddFrom}>+ Espera</button>
       </div>
     </div>
   );
-
-  const panelClass = "w-[340px] bg-white border-l border-[var(--border)] overflow-y-auto shrink-0 animate-slideIn" + " shadow-[-8px_0_24px_rgba(10,15,26,0.04)]";
+ 
+  const panelClass = "w-[340px] bg-[var(--surface)] border-l border-[var(--border)] overflow-y-auto shrink-0 animate-slideIn" + " shadow-[-8px_0_24px_rgba(10,15,26,0.04)]";
 
   if (node.type === 'messageNode') {
     return (
