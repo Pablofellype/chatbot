@@ -46,9 +46,17 @@ const criar = async (req, res) => {
 
 const atualizar = async (req, res) => {
   try {
+    const id = parseInt(req.params.id);
+    const original = await prisma.fluxo.findUnique({ where: { id } });
+    if (!original) return res.status(404).json({ erro: 'Não encontrado' });
+
+    if (original.isTemplate) {
+      return res.status(400).json({ erro: 'Este é um fluxo modelo e não pode ser editado.' });
+    }
+
     const { nome, gatilhos, ativo, horarioInicio, horarioFim, msgForaHorario, mapa, conexaoId } = req.body;
     const fluxo = await prisma.fluxo.update({
-      where: { id: parseInt(req.params.id) },
+      where: { id },
       data: {
         ...(nome !== undefined && { nome }),
         ...(gatilhos !== undefined && { gatilhos }),
@@ -70,7 +78,15 @@ const atualizar = async (req, res) => {
 
 const deletar = async (req, res) => {
   try {
-    await prisma.fluxo.delete({ where: { id: parseInt(req.params.id) } });
+    const id = parseInt(req.params.id);
+    const original = await prisma.fluxo.findUnique({ where: { id } });
+    if (!original) return res.status(404).json({ erro: 'Não encontrado' });
+
+    if (original.isTemplate) {
+      return res.status(400).json({ erro: 'Este é um fluxo modelo e não pode ser excluído.' });
+    }
+
+    await prisma.fluxo.delete({ where: { id } });
     res.json({ mensagem: 'Removido' });
   } catch (error) {
     if (error.code === 'P2025') return res.status(404).json({ erro: 'Não encontrado' });
@@ -85,7 +101,7 @@ const duplicar = async (req, res) => {
 
     const copia = await prisma.fluxo.create({
       data: {
-        nome: original.nome + ' (copia)',
+        nome: original.nome + ' (Cópia)',
         gatilhos: original.gatilhos,
         horarioInicio: original.horarioInicio,
         horarioFim: original.horarioFim,
@@ -93,6 +109,7 @@ const duplicar = async (req, res) => {
         mapa: original.mapa,
         conexaoId: original.conexaoId,
         ativo: false,
+        isTemplate: false,
       },
       include: { conexao: { select: { id: true, nome: true } } },
     });

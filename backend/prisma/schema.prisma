@@ -51,6 +51,7 @@ model Fluxo {
   mapa           String   @default("{\"nodes\":[],\"edges\":[]}")
   conexaoId      Int?
   conexao        Conexao? @relation(fields: [conexaoId], references: [id])
+  isTemplate     Boolean  @default(false)
   criadoEm       DateTime @default(now())
   atualizadoEm   DateTime @updatedAt
 }
