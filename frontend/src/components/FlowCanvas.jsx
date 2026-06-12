@@ -505,35 +505,61 @@ function FlowEditor({ fluxo, conexoes = [], onSalvar, onVoltar }) {
 
       {/* Aba: Mensagens Automaticas */}
       {abaAtiva === 'automaticas' && (
-        <div className="flex-1 flex">
+        <div className="flex-1 flex" style={{ background: 'var(--bg)' }}>
           {autenticado && msgsConexaoId ? (
             <div className="flex-1 flex flex-col">
-              <div className="px-4 py-2 border-b border-gray-200 bg-gray-50 flex items-center gap-3">
-                <button onClick={() => { setAutenticado(false); setMsgsConexaoId(null); setSenhaInput(''); }} className="text-gray-500 hover:text-[#151515] text-xs cursor-pointer">← Voltar</button>
-                <span className="text-sm text-[#151515] font-medium">{msgsConexaoNome}</span>
+              <div className="px-5 py-3.5 border-b border-[var(--border)] bg-[var(--surface-sunken)] flex items-center justify-between z-10">
+                <div className="flex items-center gap-3">
+                  <button 
+                    onClick={() => { setAutenticado(false); setMsgsConexaoId(null); setSenhaInput(''); }} 
+                    className="w-8 h-8 rounded-lg hover:bg-[var(--border-light)] flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all cursor-pointer active:scale-95"
+                    title="Voltar para a seleção de conexões"
+                  >
+                    <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                    </svg>
+                  </button>
+                  <div>
+                    <span className="text-[10px] font-extrabold text-[#F40009] uppercase tracking-wider block leading-none mb-0.5">Mensagens Automáticas</span>
+                    <span className="text-sm text-[var(--text-primary)] font-extrabold font-display leading-none">{msgsConexaoNome}</span>
+                  </div>
+                </div>
+                
+                <span className="badge badge-success text-[10px] font-bold">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  Conectado
+                </span>
               </div>
               <MensagensAutoPage conexaoIdFixa={msgsConexaoId} conexaoNome={msgsConexaoNome} />
             </div>
           ) : (
             <div className="flex-1 overflow-y-auto">
-              <div className="max-w-lg mx-auto py-12 px-6">
-                <h3 className="text-xl font-bold text-[#151515] mb-2">Mensagens Automaticas</h3>
-                <p className="text-gray-500 text-sm mb-6">Selecione uma conexao para acessar as mensagens</p>
+              <div className="max-w-md mx-auto py-14 px-6 animate-fadeIn">
+                <div className="text-center mb-8">
+                  <div className="text-[10px] font-extrabold text-[#F40009] uppercase tracking-wider mb-1">Painel Brasal</div>
+                  <h3 className="text-[22px] font-display font-extrabold text-[var(--text-primary)] tracking-tight">Mensagens Automáticas</h3>
+                  <p className="text-[var(--text-muted)] text-xs mt-1.5 font-medium">Selecione uma das conexões online abaixo para gerenciar e agendar mensagens periódicas.</p>
+                </div>
 
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {conexoes.filter((c) => c.status?.connected).map((c) => (
-                    <div key={c.id} className="bg-white border border-gray-200 rounded-[14px] shadow-[0_10px_30px_rgba(15,23,42,0.08)] p-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-                          <span className="text-[#151515] font-medium">{c.apelido || c.nome}</span>
-                          <span className="text-xs text-gray-400">{c.status?.info?.wid?.user}</span>
+                    <div key={c.id} className="card p-5 border border-[var(--border)] bg-[var(--surface)] hover:border-[#F40009]/30 transition-all duration-200">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+                          <div className="min-w-0">
+                            <span className="text-[var(--text-primary)] font-bold text-xs truncate block leading-tight">{c.apelido || c.nome}</span>
+                            {c.status?.info?.wid?.user && (
+                              <span className="text-[9.5px] text-[var(--text-muted)] font-semibold truncate block mt-0.5">{c.status?.info?.wid?.user}</span>
+                            )}
+                          </div>
                         </div>
-                        <span className="text-[10px] bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-full border border-emerald-200">Online</span>
+                        <span className="badge badge-success text-[9.5px] font-bold">Online</span>
                       </div>
 
                       {msgsConexaoId === c.id && !autenticado ? (
-                        <div className="mt-2">
+                        <div className="mt-3.5 pt-3.5 border-t border-[var(--border-light)] animate-fadeIn">
+                          <label className="label mb-1.5">Senha de Acesso</label>
                           <div className="flex gap-2">
                             <input
                               type="password"
@@ -548,11 +574,12 @@ function FlowEditor({ fluxo, conexoes = [], onSalvar, onVoltar }) {
                                   } catch { setSenhaErro(true); }
                                 }
                               }}
-                              placeholder="Digite a senha"
+                              placeholder="Digite a senha..."
                               autoFocus
-                              className={`flex-1 bg-white border rounded-lg px-3 py-2 text-[#151515] text-sm focus:outline-none ${senhaErro ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-[#e41e26]'}`}
+                              className={`flex-1 input py-2 text-xs font-semibold ${senhaErro ? 'border-rose-400 focus:border-rose-500' : ''}`}
                             />
                             <button
+                              type="button"
                               onClick={async () => {
                                 try {
                                   await conexaoService.verificarSenha(c.id, senhaInput);
@@ -560,15 +587,16 @@ function FlowEditor({ fluxo, conexoes = [], onSalvar, onVoltar }) {
                                   setAutenticado(true);
                                 } catch { setSenhaErro(true); }
                               }}
-                              className="bg-[#e41e26] hover:bg-[#c61a21] text-white px-4 py-2 rounded-lg text-xs font-medium cursor-pointer"
+                              className="btn btn-primary btn-sm px-4 font-bold"
                             >
                               Entrar
                             </button>
                           </div>
-                          {senhaErro && <p className="text-red-500 text-xs mt-1">Senha incorreta</p>}
+                          {senhaErro && <p className="text-rose-500 text-[10px] font-bold mt-1.5 flex items-center gap-1">⚠️ Senha incorreta</p>}
                         </div>
                       ) : (
                         <button
+                          type="button"
                           onClick={() => {
                             if (!c.senha) {
                               setMsgsConexaoId(c.id);
@@ -580,7 +608,7 @@ function FlowEditor({ fluxo, conexoes = [], onSalvar, onVoltar }) {
                               setSenhaErro(false);
                             }
                           }}
-                          className="mt-2 w-full text-center text-xs text-[#e41e26] hover:text-[#c61a21] py-2 border border-[#e41e26]/15 rounded-lg cursor-pointer hover:bg-[#e41e26]/5 transition-colors"
+                          className="mt-2 w-full text-center text-xs font-bold text-[#F40009] hover:text-[#d10007] hover:bg-[#F40009]/5 py-2.5 border border-dashed border-[#F40009]/20 hover:border-[#F40009]/40 rounded-xl cursor-pointer transition-all duration-200 active:scale-[0.99]"
                         >
                           {c.senha ? 'Acessar (requer senha)' : 'Acessar mensagens'}
                         </button>
@@ -589,9 +617,14 @@ function FlowEditor({ fluxo, conexoes = [], onSalvar, onVoltar }) {
                   ))}
 
                   {conexoes.filter((c) => c.status?.connected).length === 0 && (
-                    <div className="text-center py-12">
-                      <p className="text-gray-500">Nenhuma conexao online</p>
-                      <p className="text-gray-400 text-sm mt-1">Conecte um WhatsApp na pagina de Conexoes</p>
+                    <div className="text-center py-16 bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-6 shadow-xs">
+                      <div className="w-12 h-12 bg-[var(--surface-sunken)] rounded-xl flex items-center justify-center mx-auto mb-4 border border-[var(--border)] text-[var(--text-faint)]">
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={2.2} stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                        </svg>
+                      </div>
+                      <p className="text-[var(--text-primary)] font-bold text-sm">Nenhuma conexão ativa</p>
+                      <p className="text-[var(--text-muted)] text-xs mt-1 font-medium">Por favor, conecte uma conta de WhatsApp online na aba "Conexões" para gerenciar as mensagens agendadas.</p>
                     </div>
                   )}
                 </div>
