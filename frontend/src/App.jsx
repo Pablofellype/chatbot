@@ -33,6 +33,7 @@ function App() {
   // Filtros e busca
   const [busca, setBusca] = useState('');
   const [conexaoFiltro, setConexaoFiltro] = useState('');
+  const [statusFiltro, setStatusFiltro] = useState('todos');
 
   useEffect(() => {
     const verificarSessao = async () => {
@@ -197,12 +198,15 @@ function App() {
 
   const onlineCount = conexoes.filter((c) => c.status?.connected).length;
 
-  // Filtragem dos fluxos baseada em busca e conexão
+  // Filtragem dos fluxos baseada em busca, conexão e status
   const fluxosFiltrados = fluxos.filter((f) => {
     const matchBusca = f.nome.toLowerCase().includes(busca.toLowerCase()) || 
                        f.gatilhos.toLowerCase().includes(busca.toLowerCase());
     const matchConexao = !conexaoFiltro || String(f.conexaoId) === conexaoFiltro;
-    return matchBusca && matchConexao;
+    const matchStatus = statusFiltro === 'todos' || 
+                        (statusFiltro === 'ativos' && f.ativo) || 
+                        (statusFiltro === 'inativos' && !f.ativo);
+    return matchBusca && matchConexao && matchStatus;
   });
 
   return (
@@ -306,279 +310,280 @@ function App() {
         {pagina === 'fluxos' && (
           <div className="max-w-5xl mx-auto px-8 py-8 animate-fadeIn">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 border-b border-[var(--border-light)] pb-5">
               <div>
-                <h2 className="text-[28px] font-display font-extrabold text-[#0F172A] tracking-tight leading-none">Fluxos de Atendimento</h2>
-                <p className="text-[var(--text-muted)] text-sm mt-2">Crie, duplique e controle a ativação dos seus fluxos de chatbot.</p>
+                <div className="text-[10px] font-extrabold text-[#F40009] uppercase tracking-wider mb-1">Painel Brasal</div>
+                <h2 className="text-[26px] font-display font-extrabold text-[var(--text-primary)] tracking-tight leading-none">Fluxos de Atendimento</h2>
+                <p className="text-[var(--text-muted)] text-xs mt-1.5 font-medium">Crie, configure e controle o status dos fluxos do seu chatbot de forma centralizada.</p>
               </div>
-              <button onClick={handleNovo} className="btn btn-primary btn-lg shadow-md hover:shadow-lg">
-                <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+              <button onClick={handleNovo} className="btn btn-primary btn-md shadow-sm hover:shadow-md py-2.5 px-5 text-xs font-bold">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                 </svg>
                 Criar Novo Fluxo
               </button>
             </div>
 
-            {/* Insights Bar */}
-            <div className="mb-8 p-4 rounded-2xl bg-gradient-to-r from-red-50/60 to-white border border-[#E2E8F0] dark:from-[#180506]/35 dark:to-[#0f172a] shadow-xs flex items-center justify-between gap-4 animate-fadeIn">
-              <div className="flex items-center gap-3.5">
-                <div className="w-10 h-10 bg-[#F40009]/10 rounded-xl flex items-center justify-center shrink-0 border border-[#F40009]/20 shadow-xs">
-                  <svg className="w-5.5 h-5.5 text-[#F40009]" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 18a3.75 3.75 0 00.495-7.467 5.99 5.99 0 00-1.925 3.546 5.974 5.974 0 01-2.133-1A3.75 3.75 0 0012 18z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 21m0 0l-1.5-1.5M9 21l1.5-1.5m3.313-3.596L15 21m0 0l-1.5-1.5M15 21l1.5-1.5" />
-                  </svg>
-                </div>
-                <div>
-                  <h4 className="text-[10px] font-extrabold uppercase tracking-widest text-[#F40009]">Dica de Desempenho</h4>
-                  <p className="text-xs text-[var(--text-secondary)] font-medium mt-1 transition-all duration-300">
-                    {sugestoesIA[sugestaoIndex]}
-                  </p>
-                </div>
-              </div>
-              <div className="hidden sm:flex items-center gap-1.5 bg-[var(--surface-sunken)] px-3 py-1.5 rounded-xl border border-[var(--border)] text-[9px] font-extrabold text-[var(--text-secondary)] shrink-0 uppercase tracking-widest">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#F40009]" />
-                Insight Ativo
-              </div>
-            </div>
-
-            {/* Stats Metric Section */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 stagger">
-              {/* Stat 1: Total de Fluxos */}
-              <div className="bg-white rounded-2xl border border-[#E2E8F0] p-6 shadow-xs flex items-center justify-between transition-all hover:shadow-md hover:border-[#F40009]/20">
-                <div className="space-y-1.5">
-                  <p className="text-[11px] font-extrabold uppercase tracking-widest text-[#94A3B8]">Total de Fluxos</p>
-                  <p className="text-3xl font-extrabold text-[#0F172A] font-display">{fluxos.length}</p>
-                  <span className="text-[10px] font-semibold text-[#64748B] flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-                    Fluxos configurados
-                  </span>
-                </div>
-                <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-blue-500 border border-blue-100">
-                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
-                  </svg>
-                </div>
-              </div>
-
-              {/* Stat 2: Fluxos Ativos */}
-              <div className="bg-white rounded-2xl border border-[#E2E8F0] p-6 shadow-xs flex items-center justify-between transition-all hover:shadow-md hover:border-[#F40009]/20">
-                <div className="space-y-1.5">
-                  <p className="text-[11px] font-extrabold uppercase tracking-widest text-[#94A3B8]">Fluxos Ativos</p>
-                  <p className="text-3xl font-extrabold text-emerald-600 font-display">
-                    {fluxos.filter((f) => f.ativo).length}
-                  </p>
-                  <span className="text-[10px] font-semibold text-emerald-600 flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    Em execução no momento
-                  </span>
-                </div>
-                <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-500 border border-emerald-100">
-                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-              </div>
-
-              {/* Stat 3: Total de Nodes */}
-              <div className="bg-white rounded-2xl border border-[#E2E8F0] p-6 shadow-xs flex items-center justify-between transition-all hover:shadow-md hover:border-[#F40009]/20">
-                <div className="space-y-1.5">
-                  <p className="text-[11px] font-extrabold uppercase tracking-widest text-[#94A3B8]">Elementos do Mapa</p>
-                  <p className="text-3xl font-extrabold text-[#F40009] font-display">
-                    {fluxos.reduce((a, f) => a + (f.mapa?.nodes?.length || 0), 0)}
-                  </p>
-                  <span className="text-[10px] font-semibold text-[#64748B] flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#F40009]" />
-                    Total de blocos integrados
-                  </span>
-                </div>
-                <div className="w-12 h-12 bg-[#F40009]/5 rounded-xl flex items-center justify-center text-[#F40009] border border-[#F40009]/10">
-                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.97 5.97 0 00-.75-2.985m-.75-10.378a3 3 0 11-6 0 3 3 0 016 0zm-3 8.25a8.985 8.985 0 00-6 2.512m0 0A8.987 8.987 0 0118 18m-12 0A8.967 8.967 0 0118 18" />
-                  </svg>
-                </div>
-              </div>
-            </div>
-
-            {/* Search and Filters */}
-            <div className="flex flex-col md:flex-row gap-4 mb-8 bg-white border border-[#E2E8F0] rounded-2xl p-4 shadow-xs">
-              <div className="flex-1 relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#94A3B8] pointer-events-none">
-                  <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
-                </span>
-                <input
-                  type="text"
-                  placeholder="Buscar fluxos por nome ou palavra-chave de gatilho..."
-                  value={busca}
-                  onChange={(e) => setBusca(e.target.value)}
-                  className="w-full pl-11 pr-4 py-3 rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] text-[#0F172A] text-sm placeholder-[#94A3B8] focus:outline-none focus:border-[#F40009] focus:ring-4 focus:ring-[#F40009]/5 focus:bg-white transition-all font-medium"
-                />
-              </div>
-              <div className="relative md:w-72">
-                <select
-                  value={conexaoFiltro}
-                  onChange={(e) => setConexaoFiltro(e.target.value)}
-                  className="w-full pl-4 pr-10 py-3 rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] text-[#334155] text-sm focus:outline-none focus:border-[#F40009] focus:ring-4 focus:ring-[#F40009]/5 focus:bg-white transition-all font-semibold appearance-none cursor-pointer"
+            {/* Status Tabs & Toolbar */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+              {/* Status Segment Buttons */}
+              <div className="flex p-1 bg-[var(--surface-sunken)] border border-[var(--border)] rounded-xl self-start">
+                <button
+                  onClick={() => setStatusFiltro('todos')}
+                  className={`px-4 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                    statusFiltro === 'todos'
+                      ? 'bg-white dark:bg-[var(--surface)] text-[var(--text-primary)] shadow-xs border border-[var(--border)]'
+                      : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-transparent'
+                  }`}
                 >
-                  <option value="">Filtrar por conexão...</option>
-                  {conexoes.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      📞 {c.apelido || c.nome} {c.status?.connected ? '(Conectado)' : '(Desconectado)'}
-                    </option>
-                  ))}
-                </select>
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-[#64748B]">
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-                  </svg>
+                  Todos <span className="ml-1 px-1.5 py-0.2 bg-[var(--border-light)] text-[var(--text-muted)] rounded text-[10px]">{fluxos.length}</span>
+                </button>
+                <button
+                  onClick={() => setStatusFiltro('ativos')}
+                  className={`px-4 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                    statusFiltro === 'ativos'
+                      ? 'bg-white dark:bg-[var(--surface)] text-[var(--text-primary)] shadow-xs border border-[var(--border)]'
+                      : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-transparent'
+                  }`}
+                >
+                  Ativos <span className="ml-1 px-1.5 py-0.2 bg-emerald-500/10 text-emerald-600 rounded text-[10px]">{fluxos.filter((f) => f.ativo).length}</span>
+                </button>
+                <button
+                  onClick={() => setStatusFiltro('inativos')}
+                  className={`px-4 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                    statusFiltro === 'inativos'
+                      ? 'bg-white dark:bg-[var(--surface)] text-[var(--text-primary)] shadow-xs border border-[var(--border)]'
+                      : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-transparent'
+                  }`}
+                >
+                  Inativos <span className="ml-1 px-1.5 py-0.2 bg-[var(--border-light)] text-[var(--text-muted)] rounded text-[10px]">{fluxos.filter((f) => !f.ativo).length}</span>
+                </button>
+              </div>
+
+              {/* Search and Channel Filter Group */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 md:w-auto w-full">
+                {/* Search Input */}
+                <div className="relative flex-1 sm:w-64">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-faint)] pointer-events-none">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  </span>
+                  <input
+                    type="text"
+                    placeholder="Buscar por nome ou gatilho..."
+                    value={busca}
+                    onChange={(e) => setBusca(e.target.value)}
+                    className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--surface-sunken)] text-[var(--text-primary)] text-xs placeholder-[var(--text-faint)] focus:outline-none focus:border-[#F40009] focus:ring-4 focus:ring-[#F40009]/5 focus:bg-white dark:focus:bg-[var(--surface)] transition-all font-semibold"
+                  />
+                </div>
+
+                {/* Connection Dropdown */}
+                <div className="relative sm:w-56">
+                  <select
+                    value={conexaoFiltro}
+                    onChange={(e) => setConexaoFiltro(e.target.value)}
+                    className="w-full pl-3 pr-8 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--surface-sunken)] text-[var(--text-secondary)] text-xs font-semibold focus:outline-none focus:border-[#F40009] focus:ring-4 focus:ring-[#F40009]/5 focus:bg-white dark:focus:bg-[var(--surface)] transition-all appearance-none cursor-pointer"
+                  >
+                    <option value="">Todas as conexões</option>
+                    {conexoes.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.apelido || c.nome} {c.status?.connected ? '(Conectado)' : '(Desconectado)'}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-[var(--text-muted)]">
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                    </svg>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* List em Grid de Cards Premium (Estilo SaaS Moderno) */}
+            {/* List em Table Premium (Estilo SaaS Moderno) */}
             {loading ? (
-              <div className="text-center py-20 text-[var(--text-faint)]">Carregando fluxos...</div>
+              <div className="text-center py-20 text-[var(--text-faint)] font-bold text-sm">Carregando fluxos...</div>
             ) : fluxosFiltrados.length === 0 ? (
-              <div className="text-center py-24 bg-white border border-[#E2E8F0] rounded-2xl shadow-xs">
-                <div className="w-16 h-16 bg-[#F8FAFC] rounded-2xl flex items-center justify-center mx-auto mb-4 border border-[#E2E8F0]">
-                  <svg className="w-7 h-7 text-[#94A3B8]" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+              <div className="text-center py-24 bg-[var(--surface)] border border-[var(--border)] rounded-2xl shadow-xs">
+                <div className="w-14 h-14 bg-[var(--surface-sunken)] rounded-xl flex items-center justify-center mx-auto mb-4 border border-[var(--border)]">
+                  <svg className="w-6 h-6 text-[var(--text-faint)]" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
                   </svg>
                 </div>
-                <p className="text-[#334155] text-base font-bold">Nenhum fluxo encontrado</p>
-                <p className="text-[#64748B] text-sm mt-1">
-                  {busca || conexaoFiltro ? 'Ajuste os filtros de busca para encontrar outros fluxos.' : 'Comece criando o seu primeiro fluxo de atendimento.'}
+                <p className="text-[var(--text-primary)] text-sm font-bold">Nenhum fluxo encontrado</p>
+                <p className="text-[var(--text-muted)] text-xs mt-1 max-w-xs mx-auto">
+                  {busca || conexaoFiltro || statusFiltro !== 'todos' 
+                    ? 'Ajuste os filtros de busca ou status para encontrar outros fluxos.' 
+                    : 'Nenhum fluxo de atendimento cadastrado nesta conta.'}
                 </p>
               </div>
             ) : (
-              <div className="space-y-3 stagger">
-                {fluxosFiltrados.map((fluxo) => (
-                  <div key={fluxo.id} className="bg-white rounded-2xl border border-[#E2E8F0] hover:border-[#CBD5E1] p-4.5 hover:shadow-md transition-all duration-200 flex flex-col md:flex-row md:items-center justify-between gap-4 relative overflow-hidden shadow-xs group">
-                    {/* Status accent border line on the left */}
-                    <div className={`absolute left-0 top-0 bottom-0 w-[4px] transition-colors duration-200 ${fluxo.ativo ? 'bg-emerald-500' : 'bg-[#CBD5E1]'}`} />
+              <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl overflow-hidden shadow-xs">
+                {/* Table Header (Desktop) */}
+                <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-3.5 bg-[var(--surface-sunken)] border-b border-[var(--border)] text-[10px] font-extrabold text-[var(--text-muted)] uppercase tracking-wider">
+                  <div className="col-span-5 flex items-center">Fluxo / Detalhes</div>
+                  <div className="col-span-3 flex items-center">Gatilhos</div>
+                  <div className="col-span-2 flex items-center">Canal Associado</div>
+                  <div className="col-span-2 flex items-center justify-end">Ações</div>
+                </div>
 
-                    {/* Column 1: Info (Name, nodes count, schedules) */}
-                    <div className="flex-1 min-w-0 pl-2">
-                      <div className="flex items-center gap-3">
-                        <h3 className="text-[#0F172A] font-bold text-[15px] tracking-tight group-hover:text-[#F40009] transition-colors duration-200 truncate">
-                          {fluxo.nome}
-                        </h3>
+                {/* Table Body */}
+                <div className="divide-y divide-[var(--border-light)]">
+                  {fluxosFiltrados.map((fluxo) => (
+                    <div 
+                      key={fluxo.id} 
+                      className="grid grid-cols-1 md:grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-[var(--surface-sunken)]/40 transition-colors duration-150 relative group"
+                    >
+                      {/* Flow Details column (span 5) */}
+                      <div className="col-span-1 md:col-span-5 flex items-start gap-3 min-w-0">
+                        {/* Elegant status indicator dot */}
+                        <div className="pt-1.5 shrink-0">
+                          <div 
+                            className={`w-2 h-2 rounded-full ${fluxo.ativo ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300 dark:bg-slate-700'}`} 
+                            style={fluxo.ativo ? { boxShadow: '0 0 6px rgba(16,185,129,0.6)' } : {}}
+                            title={fluxo.ativo ? 'Fluxo Ativo' : 'Fluxo Inativo'}
+                          />
+                        </div>
+
+                        {/* Text info */}
+                        <div className="min-w-0 flex-1">
+                          <h3 
+                            onClick={() => handleEditar(fluxo)} 
+                            className="text-[14px] font-bold text-[var(--text-primary)] hover:text-[#F40009] transition-colors duration-150 truncate cursor-pointer leading-tight"
+                          >
+                            {fluxo.nome}
+                          </h3>
+                          
+                          <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 mt-1 text-[11px] font-semibold text-[var(--text-muted)]">
+                            <span className="flex items-center gap-1">
+                              <svg className="w-3.5 h-3.5 text-[var(--text-faint)]" fill="none" viewBox="0 0 24 24" strokeWidth={2.2} stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+                              </svg>
+                              {fluxo.mapa?.nodes?.length || 0} blocos
+                            </span>
+                            {fluxo.horarioInicio && (
+                              <span className="flex items-center gap-1 text-amber-600 dark:text-amber-400">
+                                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.2} stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                {fluxo.horarioInicio} — {fluxo.horarioFim}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Triggers column (span 3) */}
+                      <div className="col-span-1 md:col-span-3 flex flex-wrap gap-1">
+                        {fluxo.gatilhos ? (() => {
+                          const lista = fluxo.gatilhos.split(',').map(g => g.trim()).filter(Boolean);
+                          const visiveis = lista.slice(0, 3);
+                          const restantes = lista.length - 3;
+                          return (
+                            <>
+                              {visiveis.map((g, i) => (
+                                <span key={i} className="text-[10px] font-mono font-bold bg-[var(--surface-sunken)] text-[var(--text-secondary)] px-2 py-0.5 rounded border border-[var(--border)]">
+                                  "{g}"
+                                </span>
+                              ))}
+                              {restantes > 0 && (
+                                <span className="text-[10px] font-mono font-extrabold bg-[#F40009]/5 text-[#F40009] px-2 py-0.5 rounded border border-[#F40009]/10">
+                                  +{restantes}
+                                </span>
+                              )}
+                            </>
+                          );
+                        })() : (
+                          <span className="text-[11px] text-[var(--text-faint)] font-bold italic tracking-wide">Sem gatilhos</span>
+                        )}
+                      </div>
+
+                      {/* Linked Connection column (span 2) */}
+                      <div className="col-span-1 md:col-span-2 min-w-0">
+                        <div className="relative">
+                          <select
+                            value={fluxo.conexaoId || ''}
+                            onClick={(e) => e.stopPropagation()}
+                            onChange={async (e) => {
+                              await fluxoService.atualizar(fluxo.id, { conexaoId: e.target.value ? parseInt(e.target.value) : null });
+                              carregarFluxos();
+                            }}
+                            className="w-full bg-[var(--surface-sunken)] hover:bg-[var(--border-light)] border border-[var(--border)] rounded-lg pl-3 pr-7 py-1.5 text-xs text-[var(--text-secondary)] font-bold focus:outline-none focus:border-[#F40009] cursor-pointer appearance-none transition-all truncate"
+                          >
+                            <option value="">⚠️ Sem canal</option>
+                            {conexoes.map((c) => (
+                              <option key={c.id} value={c.id}>
+                                {c.status?.connected ? '🟢' : '🔴'} {c.apelido || c.nome}
+                              </option>
+                            ))}
+                          </select>
+                          <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-[var(--text-muted)]">
+                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                            </svg>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Toggle & Action buttons column (span 2) */}
+                      <div className="col-span-1 md:col-span-2 flex items-center justify-end gap-3.5">
                         {/* Custom Sliding Toggle Switch */}
-                        <div className="flex items-center gap-2 select-none shrink-0">
+                        <div className="flex items-center select-none shrink-0" title={fluxo.ativo ? 'Desativar Fluxo' : 'Ativar Fluxo'}>
                           <button
                             type="button"
                             onClick={() => handleToggle(fluxo)}
-                            className={`relative inline-flex h-5 w-8.5 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                              fluxo.ativo ? 'bg-emerald-500' : 'bg-[#E2E8F0]'
+                            className={`relative inline-flex h-4.5 w-8 shrink-0 cursor-pointer rounded-full border border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                              fluxo.ativo ? 'bg-emerald-500' : 'bg-slate-200 dark:bg-slate-800'
                             }`}
                           >
                             <span
-                              className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition duration-200 ease-in-out ${
+                              className={`pointer-events-none inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow-xs transition duration-200 ease-in-out ${
                                 fluxo.ativo ? 'translate-x-3.5' : 'translate-x-0'
                               }`}
                             />
                           </button>
                         </div>
-                      </div>
-                      
-                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 mt-2 text-xs text-[#64748B] font-semibold">
-                        <span className="flex items-center gap-1.5 bg-[#F8FAFC] border border-[#E2E8F0] px-2.5 py-0.5 rounded-md text-[11px]">
-                          <svg className="w-3.5 h-3.5 text-[#94A3B8]" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
-                          </svg>
-                          {fluxo.mapa?.nodes?.length || 0} blocos
-                        </span>
-                        {fluxo.horarioInicio && (
-                          <span className="flex items-center gap-1 bg-[#F40009]/5 text-[#F40009] border border-[#F40009]/10 px-2.5 py-0.5 rounded-md text-[11px] font-extrabold">
-                            ⏰ {fluxo.horarioInicio} — {fluxo.horarioFim}
-                          </span>
-                        )}
-                      </div>
-                    </div>
 
-                    {/* Column 2: Linked channel select */}
-                    <div className="w-full md:w-56 shrink-0 z-20">
-                      <div className="relative">
-                        <select
-                          value={fluxo.conexaoId || ''}
-                          onClick={(e) => e.stopPropagation()}
-                          onChange={async (e) => {
-                            await fluxoService.atualizar(fluxo.id, { conexaoId: e.target.value ? parseInt(e.target.value) : null });
-                            carregarFluxos();
-                          }}
-                          className="w-full bg-[#F8FAFC] border border-[#CBD5E1] rounded-lg pl-8.5 pr-7 py-2.5 text-xs text-[#475569] font-bold focus:outline-none focus:border-[#F40009] focus:ring-4 focus:ring-[#F40009]/5 cursor-pointer appearance-none transition-all"
-                        >
-                          <option value="">⚠️ Sem canal associado</option>
-                          {conexoes.map((c) => (
-                            <option key={c.id} value={c.id}>
-                              {c.status?.connected ? '🟢' : '🔴'} {c.apelido || c.nome}
-                            </option>
-                          ))}
-                        </select>
-                        <div className="absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-[#94A3B8]">
-                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" />
-                          </svg>
-                        </div>
-                        <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-[#64748B]">
-                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-                          </svg>
+                        {/* Divider */}
+                        <span className="hidden md:block w-px h-4 bg-[var(--border)] shrink-0" />
+
+                        {/* Inline Actions Group */}
+                        <div className="flex items-center gap-1">
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); handleEditar(fluxo); }} 
+                            className="p-1.5 text-[var(--text-muted)] hover:text-[#F40009] rounded-lg hover:bg-[var(--border-light)] transition-all duration-150 cursor-pointer shrink-0"
+                            title="Editar Fluxo"
+                          >
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
+                            </svg>
+                          </button>
+                          
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); handleDuplicar(fluxo.id); }} 
+                            className="p-1.5 text-[var(--text-muted)] hover:text-blue-500 rounded-lg hover:bg-[var(--border-light)] transition-all duration-150 cursor-pointer shrink-0"
+                            title="Duplicar Fluxo"
+                          >
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H5.25m11.9-3.675A.624.624 0 0117 3.25v11.5c0 .345-.28.625-.625.625H8.362a.624.624 0 01-.437-.18l-3.5-3.5a.624.624 0 01-.18-.438V3.25c0-.345.28-.625.625-.625h8.662c.166 0 .326.066.444.185l3.5 3.5z" />
+                            </svg>
+                          </button>
+                          
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); handleDeletar(fluxo.id); }} 
+                            className="p-1.5 text-[var(--text-muted)] hover:text-rose-600 rounded-lg hover:bg-[var(--border-light)] transition-all duration-150 cursor-pointer shrink-0"
+                            title="Excluir Fluxo"
+                          >
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                            </svg>
+                          </button>
                         </div>
                       </div>
                     </div>
-
-                    {/* Column 3: Monospace triggers */}
-                    <div className="flex-1 min-w-0 flex flex-wrap gap-1.5 justify-start md:justify-center">
-                      {fluxo.gatilhos ? (() => {
-                        const lista = fluxo.gatilhos.split(',').map(g => g.trim()).filter(Boolean);
-                        const visiveis = lista.slice(0, 4);
-                        const restantes = lista.length - 4;
-                        return (
-                          <>
-                            {visiveis.map((g, i) => (
-                              <span key={i} className="text-[10.5px] font-mono font-bold bg-[#F8FAFC] text-[#334155] px-2.5 py-1 rounded-lg border border-[#E2E8F0] shadow-xs">
-                                "{g}"
-                              </span>
-                            ))}
-                            {restantes > 0 && (
-                              <span className="text-[10.5px] font-extrabold bg-[#F40009]/5 text-[#F40009] px-2.5 py-1 rounded-lg border border-[#F40009]/10">
-                                +{restantes}
-                              </span>
-                            )}
-                          </>
-                        );
-                      })() : (
-                        <span className="text-[11px] text-[#94A3B8] font-bold uppercase tracking-wider italic">Sem gatilhos</span>
-                      )}
-                    </div>
-
-                    {/* Column 4: Action Buttons */}
-                    <div className="flex items-center gap-2 shrink-0 justify-end w-full md:w-auto pt-3.5 md:pt-0 border-t md:border-t-0 border-[#E2E8F0] z-10">
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); handleEditar(fluxo); }} 
-                        className="btn btn-primary btn-sm px-4.5 py-2 font-extrabold shadow-sm"
-                      >
-                        Editar
-                      </button>
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); handleDuplicar(fluxo.id); }} 
-                        className="btn btn-ghost btn-sm text-[#475569] font-bold px-3"
-                        title="Duplicar Fluxo"
-                      >
-                        Duplicar
-                      </button>
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); handleDeletar(fluxo.id); }} 
-                        className="btn btn-danger btn-sm text-red-600 font-bold px-3 hover:bg-red-50/75"
-                        title="Excluir Fluxo"
-                      >
-                        Excluir
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             )}
           </div>
