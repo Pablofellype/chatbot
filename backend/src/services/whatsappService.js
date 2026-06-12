@@ -541,9 +541,7 @@ async function listarGrupos(conexaoId) {
     const grupos = chats.filter((c) => c.isGroup);
     const result = [];
     for (const g of grupos) {
-      let foto = null;
-      try { foto = await client.getProfilePicUrl(g.id._serialized); } catch {}
-      result.push({ id: g.id._serialized, nome: g.name, foto });
+      result.push({ id: g.id._serialized, nome: g.name, foto: null });
     }
     return result;
   } catch (e) {
