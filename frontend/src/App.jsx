@@ -452,96 +452,91 @@ function App() {
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 stagger">
+              <div className="space-y-3 stagger">
                 {fluxosFiltrados.map((fluxo) => (
-                  <div key={fluxo.id} className="bg-white rounded-2xl border border-[#E2E8F0] p-6 hover:shadow-lg transition-all duration-300 flex flex-col justify-between relative group shadow-xs">
-                    {/* Brand top indicator bar (visible on hover) */}
-                    <div className="absolute top-0 left-0 w-full h-1.5 bg-transparent group-hover:bg-[#F40009] transition-all rounded-t-2xl duration-200" />
+                  <div key={fluxo.id} className="bg-white rounded-2xl border border-[#E2E8F0] hover:border-[#CBD5E1] p-4.5 hover:shadow-md transition-all duration-200 flex flex-col md:flex-row md:items-center justify-between gap-4 relative overflow-hidden shadow-xs group">
+                    {/* Status accent border line on the left */}
+                    <div className={`absolute left-0 top-0 bottom-0 w-[4px] transition-colors duration-200 ${fluxo.ativo ? 'bg-emerald-500' : 'bg-[#CBD5E1]'}`} />
 
-                    <div>
-                      {/* Card Top: Title & Custom Sliding Switch */}
-                      <div className="flex items-start justify-between gap-4 mb-4">
-                        <div className="min-w-0">
-                          <h3 className="text-[#0F172A] font-bold text-base tracking-tight pr-2 group-hover:text-[#F40009] transition-colors duration-200 truncate">
-                            {fluxo.nome}
-                          </h3>
-                          <div className="flex items-center gap-1.5 mt-1.5">
-                            <span className="w-1.5 h-1.5 rounded-full bg-[#CBD5E1]" />
-                            <span className="text-[11px] text-[#64748B] font-semibold">{fluxo.mapa?.nodes?.length || 0} elementos no fluxo</span>
-                          </div>
-                        </div>
-                        
+                    {/* Column 1: Info (Name, nodes count, schedules) */}
+                    <div className="flex-1 min-w-0 pl-2">
+                      <div className="flex items-center gap-3">
+                        <h3 className="text-[#0F172A] font-bold text-[15px] tracking-tight group-hover:text-[#F40009] transition-colors duration-200 truncate">
+                          {fluxo.nome}
+                        </h3>
                         {/* Custom Sliding Toggle Switch */}
-                        <div className="flex items-center gap-2.5 shrink-0 select-none">
-                          <span className={`text-[10px] font-extrabold uppercase tracking-wider transition-colors duration-200 ${fluxo.ativo ? 'text-emerald-600' : 'text-[#94A3B8]'}`}>
-                            {fluxo.ativo ? 'Ativo' : 'Inativo'}
-                          </span>
+                        <div className="flex items-center gap-2 select-none shrink-0">
                           <button
                             type="button"
                             onClick={() => handleToggle(fluxo)}
-                            className={`relative inline-flex h-5.5 w-10 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                            className={`relative inline-flex h-5 w-8.5 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
                               fluxo.ativo ? 'bg-emerald-500' : 'bg-[#E2E8F0]'
                             }`}
                           >
                             <span
-                              className={`pointer-events-none inline-block h-4.5 w-4.5 transform rounded-full bg-white shadow-sm transition duration-200 ease-in-out ${
-                                fluxo.ativo ? 'translate-x-4.5' : 'translate-x-0'
+                              className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition duration-200 ease-in-out ${
+                                fluxo.ativo ? 'translate-x-3.5' : 'translate-x-0'
                               }`}
                             />
                           </button>
                         </div>
                       </div>
-
-                      {/* Dropdown Vínculo Número */}
-                      <div className="space-y-3.5 mb-5 bg-[#F8FAFC] rounded-xl p-4 border border-[#E2E8F0]/80">
-                        <div>
-                          <label className="text-[9px] uppercase tracking-widest font-extrabold text-[#94A3B8] block mb-2">Canal Vinculado</label>
-                          <div className="relative">
-                            <select
-                              value={fluxo.conexaoId || ''}
-                              onClick={(e) => e.stopPropagation()}
-                              onChange={async (e) => {
-                                await fluxoService.atualizar(fluxo.id, { conexaoId: e.target.value ? parseInt(e.target.value) : null });
-                                carregarFluxos();
-                              }}
-                              className="w-full bg-white border border-[#CBD5E1] rounded-lg pl-3 pr-8 py-2 text-xs text-[#334155] font-semibold focus:outline-none focus:border-[#F40009] focus:ring-4 focus:ring-[#F40009]/5 cursor-pointer transition-all appearance-none"
-                            >
-                              <option value="">⚠️ Sem número associado...</option>
-                              {conexoes.map((c) => (
-                                <option key={c.id} value={c.id}>
-                                  {c.status?.connected ? '🟢' : '🔴'} {c.apelido || c.nome} {c.status?.info?.wid?.user ? `(${c.status.info.wid.user})` : ''}
-                                </option>
-                              ))}
-                            </select>
-                            {/* Down arrow decorator */}
-                            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-[#64748B]">
-                              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-                              </svg>
-                            </div>
-                          </div>
-                        </div>
-
+                      
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 mt-2 text-xs text-[#64748B] font-semibold">
+                        <span className="flex items-center gap-1.5 bg-[#F8FAFC] border border-[#E2E8F0] px-2.5 py-0.5 rounded-md text-[11px]">
+                          <svg className="w-3.5 h-3.5 text-[#94A3B8]" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+                          </svg>
+                          {fluxo.mapa?.nodes?.length || 0} blocos
+                        </span>
                         {fluxo.horarioInicio && (
-                          <div className="flex items-center gap-2 text-xs font-semibold text-[#475569] pt-1">
-                            <svg className="w-4.5 h-4.5 text-[#94A3B8]" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <span>Funcionamento:</span>
-                            <span className="text-[10.5px] bg-white text-[#F40009] px-2 py-0.5 rounded border border-[#E2E8F0] font-bold">{fluxo.horarioInicio} — {fluxo.horarioFim}</span>
-                          </div>
+                          <span className="flex items-center gap-1 bg-[#F40009]/5 text-[#F40009] border border-[#F40009]/10 px-2.5 py-0.5 rounded-md text-[11px] font-extrabold">
+                            ⏰ {fluxo.horarioInicio} — {fluxo.horarioFim}
+                          </span>
                         )}
                       </div>
                     </div>
 
-                    {/* Triggers & Bottom Action Buttons */}
-                    <div>
-                      {fluxo.gatilhos && (() => {
+                    {/* Column 2: Linked channel select */}
+                    <div className="w-full md:w-56 shrink-0 z-20">
+                      <div className="relative">
+                        <select
+                          value={fluxo.conexaoId || ''}
+                          onClick={(e) => e.stopPropagation()}
+                          onChange={async (e) => {
+                            await fluxoService.atualizar(fluxo.id, { conexaoId: e.target.value ? parseInt(e.target.value) : null });
+                            carregarFluxos();
+                          }}
+                          className="w-full bg-[#F8FAFC] border border-[#CBD5E1] rounded-lg pl-8.5 pr-7 py-2.5 text-xs text-[#475569] font-bold focus:outline-none focus:border-[#F40009] focus:ring-4 focus:ring-[#F40009]/5 cursor-pointer appearance-none transition-all"
+                        >
+                          <option value="">⚠️ Sem canal associado</option>
+                          {conexoes.map((c) => (
+                            <option key={c.id} value={c.id}>
+                              {c.status?.connected ? '🟢' : '🔴'} {c.apelido || c.nome}
+                            </option>
+                          ))}
+                        </select>
+                        <div className="absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-[#94A3B8]">
+                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" />
+                          </svg>
+                        </div>
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-[#64748B]">
+                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                          </svg>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Column 3: Monospace triggers */}
+                    <div className="flex-1 min-w-0 flex flex-wrap gap-1.5 justify-start md:justify-center">
+                      {fluxo.gatilhos ? (() => {
                         const lista = fluxo.gatilhos.split(',').map(g => g.trim()).filter(Boolean);
-                        const visiveis = lista.slice(0, 5);
-                        const restantes = lista.length - 5;
+                        const visiveis = lista.slice(0, 4);
+                        const restantes = lista.length - 4;
                         return (
-                          <div className="flex flex-wrap gap-1.5 py-4 border-t border-[#E2E8F0] mb-4">
+                          <>
                             {visiveis.map((g, i) => (
                               <span key={i} className="text-[10.5px] font-mono font-bold bg-[#F8FAFC] text-[#334155] px-2.5 py-1 rounded-lg border border-[#E2E8F0] shadow-xs">
                                 "{g}"
@@ -552,30 +547,35 @@ function App() {
                                 +{restantes}
                               </span>
                             )}
-                          </div>
+                          </>
                         );
-                      })()}
+                      })() : (
+                        <span className="text-[11px] text-[#94A3B8] font-bold uppercase tracking-wider italic">Sem gatilhos</span>
+                      )}
+                    </div>
 
-                      <div className="flex gap-2 justify-end pt-3.5 border-t border-[#E2E8F0]">
-                        <button 
-                          onClick={(e) => { e.stopPropagation(); handleEditar(fluxo); }} 
-                          className="btn btn-primary btn-sm flex-1 font-bold shadow-sm"
-                        >
-                          Editar Fluxo
-                        </button>
-                        <button 
-                          onClick={(e) => { e.stopPropagation(); handleDuplicar(fluxo.id); }} 
-                          className="btn btn-ghost btn-sm text-[#475569] font-bold"
-                        >
-                          Duplicar
-                        </button>
-                        <button 
-                          onClick={(e) => { e.stopPropagation(); handleDeletar(fluxo.id); }} 
-                          className="btn btn-danger btn-sm text-red-600 font-bold hover:bg-red-50/75"
-                        >
-                          Excluir
-                        </button>
-                      </div>
+                    {/* Column 4: Action Buttons */}
+                    <div className="flex items-center gap-2 shrink-0 justify-end w-full md:w-auto pt-3.5 md:pt-0 border-t md:border-t-0 border-[#E2E8F0] z-10">
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); handleEditar(fluxo); }} 
+                        className="btn btn-primary btn-sm px-4.5 py-2 font-extrabold shadow-sm"
+                      >
+                        Editar
+                      </button>
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); handleDuplicar(fluxo.id); }} 
+                        className="btn btn-ghost btn-sm text-[#475569] font-bold px-3"
+                        title="Duplicar Fluxo"
+                      >
+                        Duplicar
+                      </button>
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); handleDeletar(fluxo.id); }} 
+                        className="btn btn-danger btn-sm text-red-600 font-bold px-3 hover:bg-red-50/75"
+                        title="Excluir Fluxo"
+                      >
+                        Excluir
+                      </button>
                     </div>
                   </div>
                 ))}
