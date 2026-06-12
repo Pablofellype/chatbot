@@ -233,7 +233,7 @@ function FlowEditor({ fluxo, conexoes = [], onSalvar, onVoltar }) {
   return (
     <div className="h-screen flex flex-col bg-slate-50">
       {/* Toolbar */}
-      <div className="border-b border-[var(--border)] bg-[var(--surface)] px-6 py-3 flex items-center justify-between z-20 shadow-xs">
+      <div className="border-b border-[var(--border)] bg-[var(--surface)] px-6 py-3 flex items-center justify-between z-40 shadow-xs">
         <div className="flex items-center gap-4">
           <button 
             onClick={onVoltar} 
@@ -396,7 +396,7 @@ function FlowEditor({ fluxo, conexoes = [], onSalvar, onVoltar }) {
         <>
           {/* Config */}
           {mostrarConfig && (
-            <div className="border-b border-[var(--border)] bg-[var(--surface)] px-8 py-5 z-10 animate-slideDown shadow-xs relative">
+            <div className="border-b border-[var(--border)] bg-[var(--surface)] px-8 py-5 z-30 animate-slideDown shadow-xs relative">
               <div className="max-w-5xl mx-auto">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
@@ -410,65 +410,72 @@ function FlowEditor({ fluxo, conexoes = [], onSalvar, onVoltar }) {
                     Fechar
                   </button>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-5 gap-5">
-                  <div className="flex flex-col">
-                    <label className="label">Nome do Fluxo</label>
-                    <input 
-                      value={nome} 
-                      onChange={(e) => setNome(e.target.value)} 
-                      placeholder="Ex: Boas-vindas" 
-                      className="input py-2 px-3 text-xs" 
-                    />
-                  </div>
-                  <div className="flex flex-col">
-                    <label className="label">Palavras Gatilho</label>
-                    <input 
-                      value={gatilhos} 
-                      onChange={(e) => setGatilhos(e.target.value)} 
-                      placeholder="Ex: oi, olá, menu" 
-                      className="input py-2 px-3 text-xs font-mono font-bold" 
-                    />
-                  </div>
-                  <div className="flex flex-col">
-                    <label className="label">Canal Associado</label>
-                    <select 
-                      value={conexaoId} 
-                      onChange={(e) => setConexaoId(e.target.value)} 
-                      className="input py-2 px-3 text-xs cursor-pointer font-bold appearance-none bg-[var(--surface-sunken)]"
-                    >
-                      <option value="">Selecione...</option>
-                      {conexoes.map((c) => (
-                        <option key={c.id} value={c.id}>
-                          📞 {c.apelido || c.nome}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="flex flex-col">
-                    <label className="label">Horário Ativo (Início / Fim)</label>
-                    <div className="flex gap-2 items-center">
+                
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+                  {/* Sub-grid esquerda para parâmetros (span 3) */}
+                  <div className="md:col-span-3 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div className="sm:col-span-2 flex flex-col">
+                      <label className="label">Nome do Fluxo</label>
                       <input 
-                        type="time" 
-                        value={horarioInicio} 
-                        onChange={(e) => setHorarioInicio(e.target.value)} 
-                        className="input py-2 px-2 text-xs flex-1 text-center font-bold" 
-                      />
-                      <span className="text-[var(--text-muted)] text-xs">—</span>
-                      <input 
-                        type="time" 
-                        value={horarioFim} 
-                        onChange={(e) => setHorarioFim(e.target.value)} 
-                        className="input py-2 px-2 text-xs flex-1 text-center font-bold" 
+                        value={nome} 
+                        onChange={(e) => setNome(e.target.value)} 
+                        placeholder="Ex: Boas-vindas" 
+                        className="input py-2 px-3 text-xs" 
                       />
                     </div>
+                    <div className="flex flex-col">
+                      <label className="label">Canal Associado</label>
+                      <select 
+                        value={conexaoId} 
+                        onChange={(e) => setConexaoId(e.target.value)} 
+                        className="input py-2 px-3 text-xs cursor-pointer font-bold appearance-none bg-[var(--surface-sunken)]"
+                      >
+                        <option value="">Selecione...</option>
+                        {conexoes.map((c) => (
+                          <option key={c.id} value={c.id}>
+                            📞 {c.apelido || c.nome}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="sm:col-span-2 flex flex-col">
+                      <label className="label">Palavras Gatilho</label>
+                      <input 
+                        value={gatilhos} 
+                        onChange={(e) => setGatilhos(e.target.value)} 
+                        placeholder="Ex: oi, olá, menu" 
+                        className="input py-2 px-3 text-xs font-mono font-bold" 
+                      />
+                    </div>
+                    <div className="flex flex-col">
+                      <label className="label">Horário de Atendimento</label>
+                      <div className="flex gap-2 items-center">
+                        <input 
+                          type="time" 
+                          value={horarioInicio} 
+                          onChange={(e) => setHorarioInicio(e.target.value)} 
+                          className="input py-2 px-2 text-xs flex-1 text-center font-bold" 
+                        />
+                        <span className="text-[var(--text-muted)] text-xs">—</span>
+                        <input 
+                          type="time" 
+                          value={horarioFim} 
+                          onChange={(e) => setHorarioFim(e.target.value)} 
+                          className="input py-2 px-2 text-xs flex-1 text-center font-bold" 
+                        />
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex flex-col">
-                    <label className="label">Resposta fora do horário</label>
-                    <input 
+
+                  {/* Campo direita para resposta longa (span 2) */}
+                  <div className="md:col-span-2 flex flex-col h-full">
+                    <label className="label">Resposta fora do horário de atendimento</label>
+                    <textarea 
                       value={msgForaHorario} 
                       onChange={(e) => setMsgForaHorario(e.target.value)} 
-                      placeholder="Ex: Estamos fechados agora..." 
-                      className="input py-2 px-3 text-xs" 
+                      placeholder="Ex: Olá! Estamos fora do horário de atendimento no momento..." 
+                      rows={4}
+                      className="input py-2.5 px-3 text-xs resize-none flex-1 h-full min-h-[90px]" 
                     />
                   </div>
                 </div>
