@@ -214,36 +214,48 @@ function App() {
       {/* ─── SIDEBAR ─── */}
       <aside className="w-[260px] flex flex-col shrink-0 relative overflow-hidden bg-[var(--surface-sunken)] border-r border-[var(--border-light)] shadow-sm">
         {/* Brand Header */}
-        <div className="px-6 pt-7 pb-6 z-10 border-b border-[var(--border-light)]">
+        <div className="px-6 py-5.5 z-10 border-b border-[var(--border-light)] flex items-center justify-between">
           <div className="flex items-center gap-3">
-            {/* Logo container with overlay status dot */}
-            <div className="relative w-10 h-10 bg-white dark:bg-slate-800 border border-[var(--border)] rounded-xl flex items-center justify-center shadow-xs transition-all hover:scale-102 duration-200 shrink-0">
-              <img src="/logo-brasal.png" alt="Brasal Logo" className="w-8 h-8 object-contain" />
-              {/* Overlay Status Indicator Dot */}
+            <div className="relative">
+              <img src="/logo-brasal.png" alt="Brasal Logo" className="h-9 w-auto object-contain" />
               <div 
-                className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-[var(--surface-sunken)] ${
+                className={`absolute -bottom-0.5 -right-1 w-2.5 h-2.5 rounded-full border-2 border-[var(--surface-sunken)] ${
                   botOnline ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'
                 }`}
                 style={botOnline ? { boxShadow: '0 0 4px rgba(16,185,129,0.6)' } : {}}
                 title={botOnline ? 'Sistema Online' : 'Sistema Offline'}
               />
             </div>
-            <div className="flex flex-col min-w-0">
-              <span className="text-[14px] font-extrabold text-[var(--text-primary)] tracking-tight uppercase leading-none font-display truncate">Brasal</span>
-              <span className="text-[8.5px] font-bold text-[#F40009] tracking-[0.15em] uppercase mt-1">Refrigerantes</span>
+            <div className="flex flex-col">
+              <span className="text-[13.5px] font-extrabold text-[var(--text-primary)] tracking-tight uppercase leading-none font-display">Painel</span>
+              <span className="text-[8.5px] font-bold text-[#F40009] tracking-[0.12em] uppercase mt-1">Chatbot</span>
             </div>
           </div>
         </div>
 
         {/* Nav */}
         <nav className="flex-1 px-4 py-6 space-y-1 z-10 overflow-y-auto">
-          <p className="text-[9px] font-extrabold text-[var(--text-muted)] uppercase tracking-[0.12em] px-3.5 mb-2">Menu Principal</p>
-          {menuItems.map((item) => (
+          <p className="text-[9px] font-extrabold text-[var(--text-muted)] uppercase tracking-[0.12em] px-3.5 mb-2.5">Passo a Passo</p>
+          {menuItems.map((item, index) => (
             <button
               key={item.id}
               onClick={() => setPagina(item.id)}
-              className={`sidebar-item ${pagina === item.id ? 'sidebar-item-active' : ''}`}
+              className={`sidebar-item relative group ${pagina === item.id ? 'sidebar-item-active' : ''}`}
             >
+              {/* Active Indicator Bar */}
+              {pagina === item.id && (
+                <div className="absolute left-0 top-2.5 bottom-2.5 w-1 bg-[#F40009] rounded-r-md" />
+              )}
+
+              {/* Step indicator badge */}
+              <span className={`text-[9.5px] font-extrabold px-1.5 py-0.5 rounded-md border shrink-0 font-mono transition-colors ${
+                pagina === item.id 
+                  ? 'bg-[#F40009]/10 text-[#F40009] border-[#F40009]/20' 
+                  : 'bg-[var(--surface-sunken)] text-[var(--text-muted)] border-[var(--border)] group-hover:border-[var(--border-hover)] group-hover:text-[var(--text-primary)]'
+              }`}>
+                0{index + 1}
+              </span>
+
               {item.icon}
               <span className="flex-1 font-semibold">{item.label}</span>
               {item.id === 'conexao' && onlineCount > 0 && (
