@@ -38,8 +38,16 @@ function LoginPage({ onLoginSuccess }) {
     <div className="min-h-screen w-full flex select-none font-['Inter'] bg-white">
       {/* LEFT PANE: Premium Corporate Brand Pane (Hidden on mobile) */}
       <div className="hidden lg:flex lg:w-[42%] bg-gradient-to-br from-[#F40009] via-[#D10007] to-[#800003] p-12 flex-col justify-between text-white relative overflow-hidden shrink-0">
-        {/* Soft elegant grid pattern overlay */}
-        <div className="absolute inset-0 opacity-[0.08] pointer-events-none mix-blend-overlay bg-[linear-gradient(to_right,#ffffff_1px,transparent_1px),linear-gradient(to_bottom,#ffffff_1px,transparent_1px)] bg-[size:32px_32px]" />
+        {/* Soft elegant dotted pattern overlay */}
+        <div className="absolute inset-0 opacity-[0.06] pointer-events-none mix-blend-overlay bg-[radial-gradient(#ffffff_1px,transparent_1px)] bg-[size:24px_24px]" />
+        
+        {/* Soft elegant dynamic wave overlay at the bottom (iconic Coca-Cola ribbon style) */}
+        <div className="absolute bottom-0 left-0 w-full h-[180px] overflow-hidden pointer-events-none opacity-[0.07] select-none">
+          <svg className="absolute bottom-0 left-0 w-[130%] h-full text-white" viewBox="0 0 220 100" fill="currentColor" preserveAspectRatio="none">
+            <path d="M0,50 C60,30 100,90 160,60 C200,40 220,80 240,70 L240,100 L0,100 Z" />
+            <path d="M0,70 C40,55 80,95 130,70 C170,50 190,85 240,75 L240,100 L0,100 Z" opacity="0.5" />
+          </svg>
+        </div>
         
         {/* Soft radial overlay (pure branding, no high-intensity neon glow) */}
         <div className="absolute -top-40 -left-40 w-96 h-96 rounded-full bg-white/[0.04] blur-3xl pointer-events-none" />
