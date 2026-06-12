@@ -456,38 +456,46 @@ function App() {
                 {fluxosFiltrados.map((fluxo) => (
                   <div key={fluxo.id} className="bg-white rounded-2xl border border-[#E2E8F0] p-6 hover:shadow-lg transition-all duration-300 flex flex-col justify-between relative group shadow-xs">
                     {/* Brand top indicator bar (visible on hover) */}
-                    <div className="absolute top-0 left-0 w-full h-1 bg-transparent group-hover:bg-[#F40009] transition-colors rounded-t-2xl" />
+                    <div className="absolute top-0 left-0 w-full h-1.5 bg-transparent group-hover:bg-[#F40009] transition-all rounded-t-2xl duration-200" />
 
                     <div>
-                      {/* Card Top: Title & Status */}
+                      {/* Card Top: Title & Custom Sliding Switch */}
                       <div className="flex items-start justify-between gap-4 mb-4">
                         <div className="min-w-0">
-                          <h3 className="text-[#0F172A] font-bold text-base tracking-tight truncate pr-2 group-hover:text-[#F40009] transition-colors">
+                          <h3 className="text-[#0F172A] font-bold text-base tracking-tight pr-2 group-hover:text-[#F40009] transition-colors duration-200 truncate">
                             {fluxo.nome}
                           </h3>
-                          <div className="flex items-center gap-1.5 mt-1">
-                            <span className="w-1.5 h-1.5 rounded-full bg-[#94A3B8]" />
-                            <span className="text-[11px] text-[#64748B] font-medium">{fluxo.mapa?.nodes?.length || 0} nodes integrados</span>
+                          <div className="flex items-center gap-1.5 mt-1.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#CBD5E1]" />
+                            <span className="text-[11px] text-[#64748B] font-semibold">{fluxo.mapa?.nodes?.length || 0} elementos no fluxo</span>
                           </div>
                         </div>
                         
-                        <button 
-                          onClick={() => handleToggle(fluxo)} 
-                          className={`badge transition-all duration-200 cursor-pointer shrink-0 ${
-                            fluxo.ativo 
-                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' 
-                              : 'bg-slate-50 text-slate-500 border border-slate-200'
-                          }`}
-                        >
-                          <span className={`w-1.5 h-1.5 rounded-full ${fluxo.ativo ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
-                          {fluxo.ativo ? 'Ativo' : 'Inativo'}
-                        </button>
+                        {/* Custom Sliding Toggle Switch */}
+                        <div className="flex items-center gap-2.5 shrink-0 select-none">
+                          <span className={`text-[10px] font-extrabold uppercase tracking-wider transition-colors duration-200 ${fluxo.ativo ? 'text-emerald-600' : 'text-[#94A3B8]'}`}>
+                            {fluxo.ativo ? 'Ativo' : 'Inativo'}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleToggle(fluxo)}
+                            className={`relative inline-flex h-5.5 w-10 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                              fluxo.ativo ? 'bg-emerald-500' : 'bg-[#E2E8F0]'
+                            }`}
+                          >
+                            <span
+                              className={`pointer-events-none inline-block h-4.5 w-4.5 transform rounded-full bg-white shadow-sm transition duration-200 ease-in-out ${
+                                fluxo.ativo ? 'translate-x-4.5' : 'translate-x-0'
+                              }`}
+                            />
+                          </button>
+                        </div>
                       </div>
 
                       {/* Dropdown Vínculo Número */}
-                      <div className="space-y-3 mb-5 bg-[#F8FAFC] rounded-xl p-3.5 border border-[#E2E8F0]/80">
+                      <div className="space-y-3.5 mb-5 bg-[#F8FAFC] rounded-xl p-4 border border-[#E2E8F0]/80">
                         <div>
-                          <label className="text-[9px] uppercase tracking-widest font-extrabold text-[#94A3B8] block mb-1.5">Canal Vinculado</label>
+                          <label className="text-[9px] uppercase tracking-widest font-extrabold text-[#94A3B8] block mb-2">Canal Vinculado</label>
                           <div className="relative">
                             <select
                               value={fluxo.conexaoId || ''}
@@ -496,18 +504,18 @@ function App() {
                                 await fluxoService.atualizar(fluxo.id, { conexaoId: e.target.value ? parseInt(e.target.value) : null });
                                 carregarFluxos();
                               }}
-                              className="w-full bg-white border border-[#CBD5E1] rounded-lg px-2.5 py-1.5 text-xs text-[#334155] font-semibold focus:outline-none focus:border-[#F40009] focus:ring-2 focus:ring-[#F40009]/5 cursor-pointer transition-all appearance-none"
+                              className="w-full bg-white border border-[#CBD5E1] rounded-lg pl-3 pr-8 py-2 text-xs text-[#334155] font-semibold focus:outline-none focus:border-[#F40009] focus:ring-4 focus:ring-[#F40009]/5 cursor-pointer transition-all appearance-none"
                             >
                               <option value="">⚠️ Sem número associado...</option>
                               {conexoes.map((c) => (
                                 <option key={c.id} value={c.id}>
-                                  📞 {c.apelido || c.nome} {c.status?.info?.wid?.user ? `(${c.status.info.wid.user})` : ''} {c.status?.connected ? '✓' : '✗'}
+                                  {c.status?.connected ? '🟢' : '🔴'} {c.apelido || c.nome} {c.status?.info?.wid?.user ? `(${c.status.info.wid.user})` : ''}
                                 </option>
                               ))}
                             </select>
                             {/* Down arrow decorator */}
-                            <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-[#64748B]">
-                              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor">
+                            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-[#64748B]">
+                              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
                               </svg>
                             </div>
@@ -515,12 +523,12 @@ function App() {
                         </div>
 
                         {fluxo.horarioInicio && (
-                          <div className="flex items-center gap-2 text-xs font-semibold text-[#475569]">
-                            <svg className="w-3.5 h-3.5 text-[#94A3B8]" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                          <div className="flex items-center gap-2 text-xs font-semibold text-[#475569] pt-1">
+                            <svg className="w-4.5 h-4.5 text-[#94A3B8]" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                             <span>Funcionamento:</span>
-                            <span className="text-[11px] bg-white text-[#F40009] px-2 py-0.5 rounded border border-[#E2E8F0]">{fluxo.horarioInicio} — {fluxo.horarioFim}</span>
+                            <span className="text-[10.5px] bg-white text-[#F40009] px-2 py-0.5 rounded border border-[#E2E8F0] font-bold">{fluxo.horarioInicio} — {fluxo.horarioFim}</span>
                           </div>
                         )}
                       </div>
@@ -533,14 +541,14 @@ function App() {
                         const visiveis = lista.slice(0, 5);
                         const restantes = lista.length - 5;
                         return (
-                          <div className="flex flex-wrap gap-1.5 py-3 border-t border-[#E2E8F0] mb-4">
+                          <div className="flex flex-wrap gap-1.5 py-4 border-t border-[#E2E8F0] mb-4">
                             {visiveis.map((g, i) => (
-                              <span key={i} className="text-[10px] font-bold bg-[#F8FAFC] text-[#475569] px-2.5 py-1 rounded-lg border border-[#E2E8F0]">
-                                ⚡ {g}
+                              <span key={i} className="text-[10.5px] font-mono font-bold bg-[#F8FAFC] text-[#334155] px-2.5 py-1 rounded-lg border border-[#E2E8F0] shadow-xs">
+                                "{g}"
                               </span>
                             ))}
                             {restantes > 0 && (
-                              <span className="text-[10px] font-extrabold bg-[#F40009]/5 text-[#F40009] px-2.5 py-1 rounded-lg border border-[#F40009]/10">
+                              <span className="text-[10.5px] font-extrabold bg-[#F40009]/5 text-[#F40009] px-2.5 py-1 rounded-lg border border-[#F40009]/10">
                                 +{restantes}
                               </span>
                             )}
@@ -548,7 +556,7 @@ function App() {
                         );
                       })()}
 
-                      <div className="flex gap-2 justify-end pt-3 border-t border-[#E2E8F0]">
+                      <div className="flex gap-2 justify-end pt-3.5 border-t border-[#E2E8F0]">
                         <button 
                           onClick={(e) => { e.stopPropagation(); handleEditar(fluxo); }} 
                           className="btn btn-primary btn-sm flex-1 font-bold shadow-sm"
@@ -557,7 +565,7 @@ function App() {
                         </button>
                         <button 
                           onClick={(e) => { e.stopPropagation(); handleDuplicar(fluxo.id); }} 
-                          className="btn btn-ghost btn-sm text-[#475569]"
+                          className="btn btn-ghost btn-sm text-[#475569] font-bold"
                         >
                           Duplicar
                         </button>
