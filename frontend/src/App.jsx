@@ -212,29 +212,32 @@ function App() {
   return (
     <div className="min-h-screen flex font-['Inter'] transition-colors duration-200" style={{ background: 'var(--bg)' }}>
       {/* ─── SIDEBAR ─── */}
-      <aside className="w-[260px] flex flex-col shrink-0 relative overflow-hidden">
+      <aside className="w-[260px] flex flex-col shrink-0 relative overflow-hidden bg-[var(--surface-sunken)] border-r border-[var(--border-light)] shadow-sm">
         {/* Brand Header */}
-        <div className="px-6 pt-7 pb-6 z-10 border-b border-[var(--border-light)] relative">
+        <div className="px-6 pt-7 pb-6 z-10 border-b border-[var(--border-light)]">
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 bg-white border border-[var(--border)] rounded-xl flex items-center justify-center relative overflow-hidden shadow-sm transition-all hover:scale-105 duration-200">
-              <img src="/logo-brasal.png" alt="Brasal Logo" className="w-9 h-9 object-contain" />
+            {/* Logo container with overlay status dot */}
+            <div className="relative w-10 h-10 bg-white dark:bg-slate-800 border border-[var(--border)] rounded-xl flex items-center justify-center shadow-xs transition-all hover:scale-102 duration-200 shrink-0">
+              <img src="/logo-brasal.png" alt="Brasal Logo" className="w-8 h-8 object-contain" />
+              {/* Overlay Status Indicator Dot */}
+              <div 
+                className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-[var(--surface-sunken)] ${
+                  botOnline ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'
+                }`}
+                style={botOnline ? { boxShadow: '0 0 4px rgba(16,185,129,0.6)' } : {}}
+                title={botOnline ? 'Sistema Online' : 'Sistema Offline'}
+              />
             </div>
-            <div className="flex flex-col">
-              <span className="text-[16px] font-extrabold text-[var(--text-primary)] tracking-tight uppercase leading-none font-display">Brasal</span>
-              <span className="text-[9px] font-bold text-[#F40009] tracking-[0.12em] uppercase mt-0.5">Refrigerantes</span>
-              <div className="flex items-center gap-1.5 mt-1.5">
-                <div className={`w-[7px] h-[7px] rounded-full ${botOnline ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} style={botOnline ? { boxShadow: '0 0 6px rgba(16,185,129,0.5)' } : {}} />
-                <span className={`text-[11px] font-semibold tracking-wide ${botOnline ? 'text-emerald-600' : 'text-rose-500'}`}>
-                  {botOnline ? 'Online' : 'Offline'}
-                </span>
-              </div>
+            <div className="flex flex-col min-w-0">
+              <span className="text-[14px] font-extrabold text-[var(--text-primary)] tracking-tight uppercase leading-none font-display truncate">Brasal</span>
+              <span className="text-[8.5px] font-bold text-[#F40009] tracking-[0.15em] uppercase mt-1">Refrigerantes</span>
             </div>
           </div>
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 px-4 py-6 space-y-1.5 z-10 overflow-y-auto">
-          <p className="text-[10px] font-bold text-[var(--text-faint)] uppercase tracking-[0.1em] px-3 mb-2">Menu</p>
+        <nav className="flex-1 px-4 py-6 space-y-1 z-10 overflow-y-auto">
+          <p className="text-[9px] font-extrabold text-[var(--text-muted)] uppercase tracking-[0.12em] px-3.5 mb-2">Menu Principal</p>
           {menuItems.map((item) => (
             <button
               key={item.id}
@@ -242,11 +245,11 @@ function App() {
               className={`sidebar-item ${pagina === item.id ? 'sidebar-item-active' : ''}`}
             >
               {item.icon}
-              <span className="flex-1">{item.label}</span>
+              <span className="flex-1 font-semibold">{item.label}</span>
               {item.id === 'conexao' && onlineCount > 0 && (
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${
+                <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-md shrink-0 transition-colors ${
                   pagina === 'conexao' 
-                    ? 'bg-white text-[#F40009]' 
+                    ? 'bg-[#F40009] text-white' 
                     : 'bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400'
                 }`}>
                   {onlineCount}
@@ -256,49 +259,57 @@ function App() {
           ))}
         </nav>
 
-        {/* Elegant glowing ribbon wave */}
-        <div className="absolute bottom-16 left-0 w-full overflow-hidden pointer-events-none opacity-[0.06] select-none h-16 z-0">
-          <svg className="absolute bottom-0 left-0 w-[120%] text-[#F40009]" viewBox="0 0 220 60" fill="currentColor">
-            <path d="M0,25 Q60,45 120,20 T240,25 L240,60 L0,60 Z" />
-            <path d="M0,35 Q60,50 120,35 T240,40 L240,60 L0,60 Z" opacity="0.4" />
-          </svg>
-        </div>
+        {/* Footer with Profile & Options */}
+        <div className="px-5 py-4 border-t border-[var(--border-light)] flex items-center justify-between z-10 gap-2.5">
+          {/* User profile details */}
+          <div className="flex items-center gap-2.5 min-w-0 flex-1">
+            <div className="w-8 h-8 rounded-full bg-[#F40009]/8 text-[#F40009] font-bold text-[11px] flex items-center justify-center border border-[#F40009]/15 shrink-0 uppercase">
+              {(usuario?.nome || usuario?.username || 'U').substring(0, 2)}
+            </div>
+            <div className="flex flex-col min-w-0">
+              <span className="text-[12px] font-bold text-[var(--text-primary)] truncate leading-tight">
+                {usuario?.nome || usuario?.username}
+              </span>
+              <span className="text-[9px] font-bold text-[var(--text-muted)] uppercase tracking-wider mt-0.5">
+                Administrador
+              </span>
+            </div>
+          </div>
 
-        {/* Footer with User Info, Logout & Dark Mode Switch */}
-        <div className="px-6 py-4 border-t border-[var(--border-light)] flex items-center justify-between z-10 bg-transparent gap-3">
-          <div className="flex flex-col min-w-0">
-            <span className="text-[12px] font-bold text-[var(--text-primary)] truncate">
-              {usuario?.nome || usuario?.username}
-            </span>
+          {/* Action buttons (Theme Toggle & Logout) */}
+          <div className="flex items-center gap-1 shrink-0">
+            {/* Theme switcher */}
+            <button
+              onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+              className="w-7 h-7 rounded-lg hover:bg-[var(--border-light)] flex items-center justify-center text-[var(--text-secondary)] cursor-pointer transition-all active:scale-95"
+              title={theme === 'light' ? 'Ativar Modo Escuro' : 'Ativar Modo Claro'}
+            >
+              {theme === 'light' ? (
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
+                </svg>
+              ) : (
+                <svg className="w-4 h-4 text-amber-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2.25m0 13.5V21m9-9h-2.25C15.75 12 12 17.75 12 12s5.75-12 12-12zm-13.5 0H3m16.5-6.364l-1.591 1.591M6.364 17.636l-1.591 1.591m12.728 0l-1.591-1.591M6.364 6.364l-1.591-1.591M12 7.5a4.5 4.5 0 110 9 4.5 4.5 0 010-9z" />
+                </svg>
+              )}
+            </button>
+
+            {/* Logout button */}
             <button
               onClick={() => {
                 localStorage.removeItem('token');
                 localStorage.removeItem('usuario');
                 setUsuario(null);
               }}
-              className="text-[10px] font-semibold text-rose-500 hover:text-rose-600 flex items-center gap-1 mt-0.5 cursor-pointer transition-colors active:scale-95"
+              className="w-7 h-7 rounded-lg hover:bg-[var(--border-light)] flex items-center justify-center text-[var(--text-muted)] hover:text-rose-500 cursor-pointer transition-all active:scale-95"
+              title="Sair da Conta"
             >
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2.2} stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
               </svg>
-              Sair
             </button>
           </div>
-          <button
-            onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
-            className="w-7 h-7 rounded-lg bg-[var(--surface-sunken)] hover:bg-[var(--border)] flex items-center justify-center text-[var(--text-secondary)] cursor-pointer transition-all border border-[var(--border)] active:scale-95 shrink-0"
-            title={theme === 'light' ? 'Ativar Modo Escuro' : 'Ativar Modo Claro'}
-          >
-            {theme === 'light' ? (
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
-              </svg>
-            ) : (
-              <svg className="w-4 h-4 text-amber-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2.25m0 13.5V21m9-9h-2.25C17.75 12 12 17.75 12 12s5.75-12 12-12zm-13.5 0H3m16.5-6.364l-1.591 1.591M6.364 17.636l-1.591 1.591m12.728 0l-1.591-1.591M6.364 6.364l-1.591-1.591M12 7.5a4.5 4.5 0 110 9 4.5 4.5 0 010-9z" />
-              </svg>
-            )}
-          </button>
         </div>
       </aside>
 
