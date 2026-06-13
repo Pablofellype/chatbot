@@ -34,6 +34,7 @@ export default function MensagensAutoPage({ conexaoIdFixa, conexaoNome }) {
   const [grupos, setGrupos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadingGrupos, setLoadingGrupos] = useState(true);
+  const [erroCarregamento, setErroCarregamento] = useState(false);
   const [grupoAberto, setGrupoAberto] = useState(null);
   const [criandoNoGrupo, setCriandoNoGrupo] = useState(null);
   const [editandoId, setEditandoId] = useState(null);
@@ -82,10 +83,15 @@ export default function MensagensAutoPage({ conexaoIdFixa, conexaoNome }) {
 
   const carregarGrupos = async () => {
     setLoadingGrupos(true);
+    setErroCarregamento(false);
     try {
       const { data } = await mensagemAutoService.grupos(conexaoIdFixa);
       setGrupos(data);
-    } catch { setGrupos([]); }
+    } catch (err) {
+      setGrupos([]);
+      setErroCarregamento(true);
+      console.error(err);
+    }
     finally { setLoadingGrupos(false); }
   };
 
@@ -289,7 +295,32 @@ export default function MensagensAutoPage({ conexaoIdFixa, conexaoNome }) {
     </div>
   );
 
-  if (loading || loadingGrupos) {
+  if (erroCarregamento) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center py-20 px-6 text-center animate-fadeIn">
+        <div className="w-14 h-14 bg-rose-500/10 text-rose-600 dark:text-rose-400 rounded-2xl flex items-center justify-center mb-4 border border-rose-500/20">
+          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" strokeWidth={2.2} stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+          </svg>
+        </div>
+        <h3 className="text-[16px] font-extrabold text-[var(--text-primary)] font-display tracking-tight">Falha de Comunicação com o WhatsApp</h3>
+        <p className="text-[var(--text-muted)] text-xs mt-2 max-w-sm font-medium leading-relaxed font-semibold">
+          Ocorreu um erro ou limite de tempo ao recuperar os grupos do WhatsApp. Isso costuma acontecer quando o celular perde a conexão ou a sessão está instável.
+        </p>
+        <div className="flex gap-3 mt-6">
+          <button 
+            type="button"
+            onClick={() => { carregar(); carregarGrupos(); }} 
+            className="btn btn-primary btn-sm font-bold cursor-pointer"
+          >
+            Tentar Novamente
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (loading) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center py-20 gap-3">
         <svg className="animate-spin h-8 w-8 text-[#F40009]" fill="none" viewBox="0 0 24 24">
@@ -317,17 +348,32 @@ export default function MensagensAutoPage({ conexaoIdFixa, conexaoNome }) {
                 {conexaoNome}
               </span>
               <span className="text-[var(--text-faint)] font-bold ml-1">•</span>
-              <span className="ml-1 text-[var(--text-secondary)] font-semibold">{grupos.length} grupo(s) cadastrado(s)</span>
+              <span className="ml-1 text-[var(--text-secondary)] font-semibold">
+                {loadingGrupos ? 'Carregando grupos do WhatsApp...' : `${grupos.length} grupo(s) cadastrado(s)`}
+              </span>
             </p>
           </div>
           <button 
+            type="button"
+            disabled={loadingGrupos}
             onClick={() => setMostrarPopup(true)} 
-            className="btn btn-primary btn-md shadow-xs font-bold text-xs py-2.5 px-4.5 cursor-pointer active:scale-95 transition-all"
+            className={`btn btn-primary btn-md shadow-xs font-bold text-xs py-2.5 px-4.5 transition-all flex items-center gap-1.5 ${
+              loadingGrupos 
+                ? 'opacity-60 cursor-not-allowed' 
+                : 'cursor-pointer active:scale-95'
+            }`}
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-            </svg>
-            Adicionar Grupo
+            {loadingGrupos ? (
+              <svg className="animate-spin h-4 w-4 text-white shrink-0" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+              </svg>
+            ) : (
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+              </svg>
+            )}
+            {loadingGrupos ? 'Carregando...' : 'Adicionar Grupo'}
           </button>
         </div>
 
@@ -381,13 +427,26 @@ export default function MensagensAutoPage({ conexaoIdFixa, conexaoNome }) {
             <p className="text-[var(--text-primary)] font-bold text-sm">Nenhuma mensagem automática programada</p>
             <p className="text-[var(--text-muted)] text-xs mt-1.5 max-w-sm mx-auto font-medium">Você pode programar mensagens automáticas periódicas (diárias, semanais ou avulsas) para disparar em grupos específicos do WhatsApp.</p>
             <button 
+              type="button"
+              disabled={loadingGrupos}
               onClick={() => setMostrarPopup(true)} 
-              className="btn btn-primary btn-sm mt-5 shadow-xs font-bold"
+              className={`btn btn-primary btn-sm mt-5 shadow-xs font-bold flex items-center gap-1.5 mx-auto ${
+                loadingGrupos 
+                  ? 'opacity-60 cursor-not-allowed' 
+                  : 'cursor-pointer active:scale-95'
+              }`}
             >
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-              </svg>
-              Adicionar Primeiro Grupo
+              {loadingGrupos ? (
+                <svg className="animate-spin h-3.5 w-3.5 text-white shrink-0" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+              ) : (
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg>
+              )}
+              {loadingGrupos ? 'Carregando grupos...' : 'Adicionar Primeiro Grupo'}
             </button>
           </div>
         ) : (

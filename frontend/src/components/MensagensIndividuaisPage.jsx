@@ -37,6 +37,27 @@ export default function MensagensIndividuaisPage() {
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState(formVazio);
   const [editandoId, setEditandoId] = useState(null);
+
+  const [agora, setAgora] = useState(Date.now());
+  
+  useEffect(() => {
+    const timer = setInterval(() => setAgora(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const carregarConexoes = async () => {
+    try {
+      const { data } = await conexaoService.listar();
+      setConexoes(data);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  useEffect(() => {
+    const interval = setInterval(carregarConexoes, 10000);
+    return () => clearInterval(interval);
+  }, []);
   const [mostrarForm, setMostrarForm] = useState(false);
   const [confirmModal, setConfirmModal] = useState({
     isOpen: false,
@@ -135,9 +156,13 @@ export default function MensagensIndividuaisPage() {
     try {
       const { data } = await conexaoService.contatos(conexaoId);
       setContatosWhatsApp(data);
+      if (!data || data.length === 0) {
+        mostrarAlerta('Aviso de Contatos', 'Nenhum contato ativo foi encontrado no WhatsApp conectado. Você pode usar a opção de digitar o número manualmente.');
+      }
     } catch (e) {
       console.error('Erro ao carregar contatos do WhatsApp:', e);
       setContatosWhatsApp([]);
+      mostrarAlerta('Instabilidade no WhatsApp', 'Não foi possível carregar a lista de contatos do seu celular. Você ainda pode digitar o número de telefone manualmente ou usar os contatos já registrados no painel.');
     } finally {
       setLoadingContatos(false);
     }
@@ -423,8 +448,15 @@ export default function MensagensIndividuaisPage() {
                     
                     {/* Botão Seletor Principal */}
                     <div 
-                      onClick={() => setDropdownOpen(!dropdownOpen)} 
-                      className="input flex items-center justify-between cursor-pointer hover:border-[var(--brand)] transition-colors min-h-[46px] py-1 px-3 z-30 position-relative"
+                      onClick={() => {
+                        if (loadingContatos) return;
+                        setDropdownOpen(!dropdownOpen);
+                      }} 
+                      className={`input flex items-center justify-between transition-colors min-h-[46px] py-1 px-3 z-30 position-relative ${
+                        loadingContatos 
+                          ? 'opacity-65 cursor-not-allowed bg-[var(--surface-sunken)] border-[var(--border)]' 
+                          : 'cursor-pointer hover:border-[var(--brand)]'
+                      }`}
                     >
                       {form.numeroId ? (
                         <div className="flex items-center gap-2">
@@ -466,11 +498,20 @@ export default function MensagensIndividuaisPage() {
                           })()}
                         </div>
                       ) : (
-                        <span className="text-sm text-[var(--text-muted)]">Selecione o contato...</span>
+                        <span className="text-sm text-[var(--text-muted)]">
+                          {loadingContatos ? 'Carregando contatos do celular...' : 'Selecione o contato...'}
+                        </span>
                       )}
-                      <svg className={`w-4 h-4 text-[var(--text-muted)] transition-transform duration-200 ${dropdownOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-                      </svg>
+                      {loadingContatos ? (
+                        <svg className="animate-spin h-4 w-4 text-[var(--brand)] shrink-0" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                        </svg>
+                      ) : (
+                        <svg className={`w-4 h-4 text-[var(--text-muted)] transition-transform duration-200 ${dropdownOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                        </svg>
+                      )}
                     </div>
 
                     {/* Popover flutuante da lista */}
@@ -864,6 +905,46 @@ export default function MensagensIndividuaisPage() {
           {connsDoSetor.map(c => {
             const msgsCount = mensagens.filter(m => m.conexaoId === c.id).length;
             const online = c.status?.connected;
+            
+            const connectedTime = c.status?.connectedAt ? new Date(c.status.connectedAt).getTime() : 0;
+            const elapsed = connectedTime ? agora - connectedTime : 0;
+            const cooldown = 3 * 60 * 1000; // 3 minutos de cooldown para números
+            const restante = cooldown - elapsed;
+            const emSincronizacao = c.status?.connected && connectedTime && restante > 0;
+
+            const minutosRestantes = Math.floor(restante / 60000);
+            const segundosRestantes = Math.floor((restante % 60000) / 1000);
+            const countdownText = `${String(minutosRestantes).padStart(2, '0')}:${String(segundosRestantes).padStart(2, '0')}`;
+
+            if (emSincronizacao) {
+              return (
+                <div key={c.id}
+                  className="w-full card p-5 flex items-center gap-4 text-left animate-fadeIn border border-amber-300 dark:border-amber-700/60 bg-amber-50/10 dark:bg-amber-950/5 select-none">
+                  <div className="w-3 h-3 rounded-full shrink-0 bg-amber-500 animate-pulse shadow-sm shadow-amber-500/50" />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-semibold text-[var(--text-primary)]">{c.apelido || 'Sem apelido'}</span>
+                      <span className="badge badge-warning">
+                        Sincronizando
+                      </span>
+                    </div>
+                    <p className="text-xs text-amber-600 dark:text-amber-400 font-semibold mt-1.5 flex items-center gap-1.5">
+                      <svg className="animate-spin h-3.5 w-3.5 text-amber-600 dark:text-amber-400" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      </svg>
+                      Carregando números... (Aguarde {countdownText})
+                    </p>
+                  </div>
+                  <div className="text-right shrink-0 pr-2">
+                    <svg className="w-5 h-5 text-amber-500/70" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+                    </svg>
+                  </div>
+                </div>
+              );
+            }
+
             return (
               <button key={c.id} onClick={() => handleSelecionarConexao(c)}
                 className="w-full card card-interactive p-5 flex items-center gap-4 cursor-pointer text-left animate-fadeIn">

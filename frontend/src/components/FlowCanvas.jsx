@@ -60,6 +60,12 @@ function FlowEditor({ fluxo, conexoes = [], onSalvar, onVoltar }) {
     onConfirm: null
   });
 
+  const [agora, setAgora] = useState(Date.now());
+  useEffect(() => {
+    const timer = setInterval(() => setAgora(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
   // --- Undo/Redo ---
   const historyRef = useRef([{ nodes: fluxo?.mapa?.nodes || [], edges: fluxo?.mapa?.edges || [] }]);
   const historyIndexRef = useRef(0);
@@ -543,31 +549,70 @@ function FlowEditor({ fluxo, conexoes = [], onSalvar, onVoltar }) {
                 </div>
 
                 <div className="space-y-4">
-                  {conexoes.filter((c) => c.status?.connected).map((c) => (
-                    <div key={c.id} className={`card p-5 border border-[var(--border)] bg-[var(--surface)] hover:border-[#F40009]/30 transition-all duration-200 ${msgsConexaoId === c.id && shakeActive ? 'animate-shake border-rose-500 shadow-md shadow-rose-500/10' : ''}`}>
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-2.5 min-w-0">
-                          <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-                          <div className="min-w-0">
-                            <span className="text-[var(--text-primary)] font-bold text-xs truncate block leading-tight">{c.apelido || c.nome}</span>
-                            {c.status?.info?.wid?.user && (
-                              <span className="text-[9.5px] text-[var(--text-muted)] font-semibold truncate block mt-0.5">{c.status?.info?.wid?.user}</span>
-                            )}
-                          </div>
-                        </div>
-                        <span className="badge badge-success text-[9.5px] font-bold">Online</span>
-                      </div>
+                  {conexoes.filter((c) => c.status?.connected).map((c) => {
+                    const connectedTime = c.status?.connectedAt ? new Date(c.status.connectedAt).getTime() : 0;
+                    const elapsed = connectedTime ? agora - connectedTime : 0;
+                    const cooldown = 5 * 60 * 1000; // 5 minutos de cooldown para grupos
+                    const restante = cooldown - elapsed;
+                    const emSincronizacao = c.status?.connected && connectedTime && restante > 0;
 
-                      {msgsConexaoId === c.id && !autenticado ? (
-                        <div className="mt-3.5 pt-3.5 border-t border-[var(--border-light)] animate-fadeIn">
-                          <label className="label mb-1.5">Senha de Acesso</label>
-                          <div className="flex gap-2">
-                            <input
-                              type="password"
-                              value={senhaInput}
-                              onChange={(e) => { setSenhaInput(e.target.value); setSenhaErro(false); }}
-                              onKeyDown={async (e) => {
-                                if (e.key === 'Enter') {
+                    const minutosRestantes = Math.floor(restante / 60000);
+                    const segundosRestantes = Math.floor((restante % 60000) / 1000);
+                    const countdownText = `${String(minutosRestantes).padStart(2, '0')}:${String(segundosRestantes).padStart(2, '0')}`;
+
+                    return (
+                      <div key={c.id} className={`card p-5 border border-[var(--border)] bg-[var(--surface)] hover:border-[#F40009]/30 transition-all duration-200 ${msgsConexaoId === c.id && shakeActive ? 'animate-shake border-rose-500 shadow-md shadow-rose-500/10' : ''}`}>
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${emSincronizacao ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500 animate-pulse'}`} />
+                            <div className="min-w-0">
+                              <span className="text-[var(--text-primary)] font-bold text-xs truncate block leading-tight">{c.apelido || c.nome}</span>
+                              {c.status?.info?.wid?.user && (
+                                <span className="text-[9.5px] text-[var(--text-muted)] font-semibold truncate block mt-0.5">{c.status?.info?.wid?.user}</span>
+                              )}
+                            </div>
+                          </div>
+                          <span className={`badge text-[9.5px] font-bold ${emSincronizacao ? 'badge-warning' : 'badge-success'}`}>
+                            {emSincronizacao ? 'Sincronizando' : 'Online'}
+                          </span>
+                        </div>
+
+                        {emSincronizacao ? (
+                          <div className="mt-2 w-full text-center text-xs font-bold bg-amber-500/10 text-amber-600 border border-dashed border-amber-500/30 py-2.5 rounded-xl cursor-not-allowed flex items-center justify-center gap-2">
+                            <svg className="animate-spin h-3.5 w-3.5 text-amber-600" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                            </svg>
+                            Carregando grupos... (Aguarde {countdownText})
+                          </div>
+                        ) : msgsConexaoId === c.id && !autenticado ? (
+                          <div className="mt-3.5 pt-3.5 border-t border-[var(--border-light)] animate-fadeIn">
+                            <label className="label mb-1.5">Senha de Acesso</label>
+                            <div className="flex gap-2">
+                              <input
+                                type="password"
+                                value={senhaInput}
+                                onChange={(e) => { setSenhaInput(e.target.value); setSenhaErro(false); }}
+                                onKeyDown={async (e) => {
+                                  if (e.key === 'Enter') {
+                                    try {
+                                      await conexaoService.verificarSenha(c.id, senhaInput);
+                                      setMsgsConexaoNome(c.apelido || c.nome);
+                                      setAutenticado(true);
+                                    } catch { 
+                                      setSenhaErro(true);
+                                      setShakeActive(true);
+                                      setTimeout(() => setShakeActive(false), 500);
+                                    }
+                                  }
+                                }}
+                                placeholder="Digite a senha..."
+                                autoFocus
+                                className={`flex-1 input py-2 text-xs font-semibold ${senhaErro ? 'border-rose-400 focus:border-rose-500' : ''}`}
+                              />
+                              <button
+                                type="button"
+                                onClick={async () => {
                                   try {
                                     await conexaoService.verificarSenha(c.id, senhaInput);
                                     setMsgsConexaoNome(c.apelido || c.nome);
@@ -577,53 +622,36 @@ function FlowEditor({ fluxo, conexoes = [], onSalvar, onVoltar }) {
                                     setShakeActive(true);
                                     setTimeout(() => setShakeActive(false), 500);
                                   }
-                                }
-                              }}
-                              placeholder="Digite a senha..."
-                              autoFocus
-                              className={`flex-1 input py-2 text-xs font-semibold ${senhaErro ? 'border-rose-400 focus:border-rose-500' : ''}`}
-                            />
-                            <button
-                              type="button"
-                              onClick={async () => {
-                                try {
-                                  await conexaoService.verificarSenha(c.id, senhaInput);
-                                  setMsgsConexaoNome(c.apelido || c.nome);
-                                  setAutenticado(true);
-                                } catch { 
-                                  setSenhaErro(true);
-                                  setShakeActive(true);
-                                  setTimeout(() => setShakeActive(false), 500);
-                                }
-                              }}
-                              className="btn btn-primary btn-sm px-4 font-bold"
-                            >
-                              Entrar
-                            </button>
+                                }}
+                                className="btn btn-primary btn-sm px-4 font-bold"
+                              >
+                                Entrar
+                              </button>
+                            </div>
+                            {senhaErro && <p className="text-rose-500 text-[10px] font-bold mt-1.5 flex items-center gap-1">⚠️ Senha incorreta</p>}
                           </div>
-                          {senhaErro && <p className="text-rose-500 text-[10px] font-bold mt-1.5 flex items-center gap-1">⚠️ Senha incorreta</p>}
-                        </div>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (!c.senha) {
-                              setMsgsConexaoId(c.id);
-                              setMsgsConexaoNome(c.apelido || c.nome);
-                              setAutenticado(true);
-                            } else {
-                              setMsgsConexaoId(c.id);
-                              setSenhaInput('');
-                              setSenhaErro(false);
-                            }
-                          }}
-                          className="mt-2 w-full text-center text-xs font-bold text-[#F40009] hover:text-[#d10007] hover:bg-[#F40009]/5 py-2.5 border border-dashed border-[#F40009]/20 hover:border-[#F40009]/40 rounded-xl cursor-pointer transition-all duration-200 active:scale-[0.99]"
-                        >
-                          {c.senha ? 'Acessar (requer senha)' : 'Acessar mensagens'}
-                        </button>
-                      )}
-                    </div>
-                  ))}
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (!c.senha) {
+                                setMsgsConexaoId(c.id);
+                                setMsgsConexaoNome(c.apelido || c.nome);
+                                setAutenticado(true);
+                              } else {
+                                setMsgsConexaoId(c.id);
+                                setSenhaInput('');
+                                setSenhaErro(false);
+                              }
+                            }}
+                            className="mt-2 w-full text-center text-xs font-bold text-[#F40009] hover:text-[#d10007] hover:bg-[#F40009]/5 py-2.5 border border-dashed border-[#F40009]/20 hover:border-[#F40009]/40 rounded-xl cursor-pointer transition-all duration-200 active:scale-[0.99]"
+                          >
+                            {c.senha ? 'Acessar (requer senha)' : 'Acessar mensagens'}
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
 
                   {conexoes.filter((c) => c.status?.connected).length === 0 && (
                     <div className="text-center py-16 bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-6 shadow-xs">

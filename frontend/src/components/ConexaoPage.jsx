@@ -329,7 +329,10 @@ export default function ConexaoPage() {
                             <span className="badge badge-success">Online</span>
                           )}
                           {conexao.status?.connected ? (
-                            <button onClick={() => handleLogout(conexao.id)} className="btn btn-ghost btn-sm">Desconectar</button>
+                            <>
+                              <button onClick={() => handleLogout(conexao.id)} className="btn btn-ghost btn-sm">Desconectar</button>
+                              <button onClick={() => handleReconectar(conexao.id)} className="btn btn-dark btn-sm bg-amber-500 hover:bg-amber-600 border-none text-white px-3 font-semibold" title="Forçar reinício da conexão WhatsApp sem desligar o servidor">Reiniciar</button>
+                            </>
                           ) : (
                             <button onClick={() => handleReconectar(conexao.id)} className="btn btn-dark btn-sm">Reconectar</button>
                           )}
